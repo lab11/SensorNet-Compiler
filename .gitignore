@@ -1,3 +1,4 @@
+# Haskell
 dist
 cabal-dev
 *.o
@@ -9,3 +10,15 @@ cabal-dev
 .cabal-sandbox/
 cabal.sandbox.config
 cabal.config
+# Tup 
+.tup 
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+#nohup 
+nohup.out
+
