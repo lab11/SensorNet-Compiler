@@ -17,7 +17,8 @@ cabal-version:       >=1.8
 executable SensorNet-Compiler
   main-is:           Lexer.hs 
   hs-source-dirs:    src
-  other-modules:     Language.EventBased.Lexer 
+  other-modules:     Language.EventBased.Lexer,
+                     Language.EventBased.Parser
   build-depends:     base ==4.6.*,
                      array
   build-tools:       alex, 
