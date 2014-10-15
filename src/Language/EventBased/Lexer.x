@@ -98,7 +98,7 @@ tokens :-
 
   -- Literals                 
 
-  @string                     { \s -> (Lit (Str tail . init s)) } 
+  @string                     { \s -> (Lit (Str $ (tail . init) s)) } 
   @integer                    { \s -> (Lit (Integer (read s))) } 
   @float                      { \s -> (Lit (Flt (read s))) } 
   ("t"|"T")"rue"              { \s -> (Lit (Boolean True)) } 
