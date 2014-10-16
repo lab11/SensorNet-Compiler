@@ -30,6 +30,7 @@ $identifierchars = [$alpha $digit \_ \- \']
 @float      = [\+\-]? $digit+ \. $digit+ ([Ee] [\+ \-]? $digit+)? 
 @email      = $emailid+ \@ $alphanum+ (\. $alphanum+)+
 @identifier = $lower $identifierchars*
+@opencall   = $upper $identifierchars* \(
 @string     = \" ($printable # \" | @escape)* \"  -- " -- This comment keeps the
                                                        -- syntax hilighter happy
 
@@ -77,6 +78,7 @@ tokens :-
   "]"                         { \s -> (Flow ClSqBracket) }
   ";"                         { \s -> (Flow Semicolon) }
   ":"                         { \s -> (Flow Colon) }
+  ","                         { \s -> (Flow Comma) }
   ":="                        { \s -> (Flow Assign) }
 
   -- Operators 
@@ -98,14 +100,14 @@ tokens :-
 
   -- Literals                 
 
-  @string                     { \s -> (Lit (Str $ (tail . init) s)) } 
-  @integer                    { \s -> (Lit (Integer (read s))) } 
-  @float                      { \s -> (Lit (Flt (read s))) } 
-  ("t"|"T")"rue"              { \s -> (Lit (Boolean True)) } 
-  ("f"|"F")"alse"             { \s -> (Lit (Boolean False)) } 
+  @string                     { \s -> (Lit (Str $ read s)) } 
+  @integer                    { \s -> (Lit (Integer $ read s )) } 
+  @float                      { \s -> (Lit (Flt $ read s))} 
+  ("t"|"T")"rue"              { \s -> (Lit (Boolean True))} 
+  ("f"|"F")"alse"             { \s -> (Lit (Boolean False))} 
   @email                      { \s -> (Lit (Email s)) } 
   @identifier                 { \s -> (Lit (Identifier s)) }
- 
+  @opencall                   { \s -> (Lit (CallOpen $ init s)) }
 
 {
 
@@ -115,6 +117,7 @@ data Literals = Str String
          	    | Boolean Bool	
          	    | Identifier String
               | Email String
+              | CallOpen String
             	deriving (Eq,Show,Read)
 
 data Operators = Logical_And
@@ -139,6 +142,7 @@ data FlowControl = OpParen
             	   | ClBracket
             	   | OpSqBracket
             	   | ClSqBracket
+                 | Comma
             	   | Semicolon
             	   | Colon
             	   | Assign	

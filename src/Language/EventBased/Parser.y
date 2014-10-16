@@ -1,10 +1,13 @@
 { 
 module Language.EventBased.Parser 
 (
+  VExpr(..),
+  BinOp(..),
+  UnOp(..),
 ) where
 
+import qualified Language.EventBased.Lexer as L 
 
-import Language.EventBased.Lexer as L 
 }
 
 %name eventBased
@@ -48,12 +51,12 @@ import Language.EventBased.Lexer as L
   '}'                         {L.Flow L.ClBracket}
   '['                         {L.Flow L.OpSqBracket}
   ']'                         {L.Flow L.ClSqBracket}
+  ','                         {L.Flow L.Comma}
   ';'                         {L.Flow L.Semicolon}
   ':'                         {L.Flow L.Colon}
   ':='                        {L.Flow L.Assign}
 
   -- Operators 
-
 
   '&&'                        {L.Op L.Logical_And}
   '||'                        {L.Op L.Logical_Or}
@@ -78,14 +81,109 @@ import Language.EventBased.Lexer as L
   bool                        {L.Lit (L.Boolean $$)}
   email                       {L.Lit (L.Email $$)}
   id                          {L.Lit (L.Identifier $$)}
+  call                        {L.Lit (L.CallOpen $$)} -- Remember this comes with
+                                                      --  an attached '('
 
 %%
 
-Exp : 'DAYS'                  { 1 } 
+-- eventBased : vexpr            { $1 }
+
+binop : '&&'                  {Logical_And}
+      | '||'                  {Logical_Or}
+      | '^'                   {Logical_Xor}
+      | '=='                  {Structural_Equality}
+      | '>'                   {Greater_Than}
+      | '>='                  {Greater_Than_Equals}
+      | '<'                   {Less_Than}
+      | '<='                  {Less_Than_Equals}
+      | '<<'                  {String_Append} 
+      | '+'                   {Add} 
+      | '-'                   {Subtract}
+      | '*'                   {Multiply} 
+      | '/'                   {Divide}
+
+
+unop : '!'                    {Logical_Not}
+
+vexpr : '(' vexpr ')'         { $2 }
+      | vexpr binop vexpr     { VEBinop $2 $1 $3 }
+      | unop vexpr            { VEUnop $1 $2 }
+      | str                   { VEStr $1 }
+      | int                   { VEInt $1 }
+      | flt                   { VEFlt $1 }
+      | bool                  { VEBool $1 }
+      | email                 { VEEmail $1 }
+      | id                    { VEId $1 }
+      | call params ')'       { VECall $1 $2 }
+
+params : params ',' vexpr     { $1 ++ [$3] }
+       | vexpr                { [$1] }
 
 {
+{-
+
+newtype ID = ID String 
+           deriving (Show,Read,Eq,Ord)
+
+newtype Rule = Rule Event [Action]  
+             deriving (Show,Read,Eq,Ord)
+
+data Assignable = AsblVal VExpr
+                | AsblAct [Action]
+                deriving (Show,Read,Eq,Ord)
+
+type Assignment = (ID,Assignable)
+
+-}
+
+data VExpr = VEBinop BinOp VExpr VExpr
+           | VEUnop UnOp VExpr
+           | VEStr String
+           | VEInt Int
+           | VEFlt Float
+           | VEBool Bool
+           | VEEmail String
+           | VEId String
+           | VECall String [VExpr]
+           deriving (Show,Read,Eq,Ord)
+
+data BinOp = Logical_And
+       	   | Logical_Or		
+       	   | Logical_Xor
+       	   | Structural_Equality
+       	   | Greater_Than
+       	   | Greater_Than_Equals
+       	   | Less_Than
+       	   | Less_Than_Equals
+           | String_Append
+       	   | Add
+       	   | Subtract
+       	   | Multiply
+       	   | Divide
+           deriving (Show,Read,Eq,Ord)
+
+data UnOp = Logical_Not
+          deriving (Show,Read,Eq,Ord)
+
+{-
+-- The AST type
+data Program = Program {
+  assigned :: [Assignment],
+  rules :: [Rule]
+} deriving (Show,Read,Eq,Ord)
+
+addAssign :: Program -> Assignment -> Program 
+addAssign p a =  p{assigned=na}
+  where na = a : assigned p
+
+addRule :: Program -> Rule -> Program 
+addRule p r =  p{rules=nr}
+  where nr = r : rules p
+
+-}
 
 parseError :: [L.Token] -> a
 parseError _ = error "Parse error" 
+
 
 }

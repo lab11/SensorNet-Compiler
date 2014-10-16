@@ -14,8 +14,18 @@ maintainer:          rohitram@umich.edu
 build-type:          Simple
 cabal-version:       >=1.8
 
-executable SensorNet-Compiler
+executable SensorNet-Lexer
   main-is:           Lexer.hs 
+  hs-source-dirs:    src
+  other-modules:     Language.EventBased.Lexer
+  build-depends:     base ==4.6.*,
+                     array
+  build-tools:       alex, 
+                     happy
+
+
+executable SensorNet-Parser
+  main-is:           Parser.hs 
   hs-source-dirs:    src
   other-modules:     Language.EventBased.Lexer,
                      Language.EventBased.Parser
