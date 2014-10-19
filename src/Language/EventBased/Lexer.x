@@ -30,7 +30,8 @@ $identifierchars = [$alpha $digit \_ \- \']
 @float      = [\+\-]? $digit+ \. $digit+ ([Ee] [\+ \-]? $digit+)? 
 @email      = $emailid+ \@ $alphanum+ (\. $alphanum+)+
 @identifier = $lower $identifierchars*
-@opencall   = $upper $identifierchars* \(
+@external   = $upper $identifierchars*
+@opencall   = @external \(
 @string     = \" ($printable # \" | @escape)* \"  -- " -- This comment keeps the
                                                        -- syntax hilighter happy
 
@@ -57,6 +58,7 @@ tokens :-
   "IF"                        { \s -> (Key If) }
   "DO"                        { \s -> (Key Do) }
   "SAVE"                      { \s -> (Key Save) }
+  "INTO"                      { \s -> (Key Into) }
   "AS"                        { \s -> (Key As) }
   "SET" $white+ "OPTIONS"     { \s -> (Key Set_Options) }
   "UPDATE"                    { \s -> (Key Update) } 
@@ -83,8 +85,8 @@ tokens :-
 
   -- Operators 
 
-  "&"                         { \s -> (Op Logical_And) }
-  "|"                         { \s -> (Op Logical_Or) }
+  "&&"                        { \s -> (Op Logical_And) }
+  "||"                        { \s -> (Op Logical_Or) }
   "^"                         { \s -> (Op Logical_Xor) }
   "!"                         { \s -> (Op Logical_Not) }
   "="                         { \s -> (Op Structural_Equality) }
@@ -108,6 +110,7 @@ tokens :-
   @email                      { \s -> (Lit (Email s)) } 
   @identifier                 { \s -> (Lit (Identifier s)) }
   @opencall                   { \s -> (Lit (CallOpen $ init s)) }
+  @external                   { \s -> (Lit (Extern s)) }
 
 {
 
@@ -118,6 +121,7 @@ data Literals = Str String
          	    | Identifier String
               | Email String
               | CallOpen String
+              | Extern String
             	deriving (Eq,Show,Read)
 
 data Operators = Logical_And
@@ -160,7 +164,9 @@ data Keyword = On
         	   | Send
         	   | Execute 
         	   | If
+        	   | Else
         	   | Do 
+        	   | Into
         	   | Save
         	   | As
         	   | Set_Options

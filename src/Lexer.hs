@@ -1,5 +1,6 @@
 module Main where
 
+import Text.Show.Pretty
 import Language.EventBased.Lexer
 
-main = interact (show . tokenize)
+main = interact (ppShow . tokenize)

@@ -4,13 +4,18 @@ module Language.EventBased.Parser
   VExpr(..),
   BinOp(..),
   UnOp(..),
+  valParse,
+  actParse,
 ) where
 
-import qualified Language.EventBased.Lexer as L 
+import Text.Show.Pretty
+import qualified Language.EventBased.Lexer as L
 
 }
 
-%name eventBased
+%name valParse Vexpr
+%name actParse Aexpr
+%name intParse Interval
 %tokentype{ L.Token }
 %error{ parseError }
 
@@ -28,8 +33,10 @@ import qualified Language.EventBased.Lexer as L
   'WITHIN'                    {L.Key L.Within}
   'GATHER'                    {L.Key L.Gather}
   'SEND'                      {L.Key L.Send}
+  'INTO'                      {L.Key L.Into}
   'EXECUTE'                   {L.Key L.Execute}
   'IF'                        {L.Key L.If}
+  'ELSE'                      {L.Key L.Else}
   'DO'                        {L.Key L.Do}
   'SAVE'                      {L.Key L.Save}
   'AS'                        {L.Key L.As}
@@ -81,14 +88,17 @@ import qualified Language.EventBased.Lexer as L
   bool                        {L.Lit (L.Boolean $$)}
   email                       {L.Lit (L.Email $$)}
   id                          {L.Lit (L.Identifier $$)}
+  extern                      {L.Lit (L.Extern $$)}
   call                        {L.Lit (L.CallOpen $$)} -- Remember this comes with
                                                       --  an attached '('
-
+%nonassoc '>' '<' '<=' '>=' '=='
+%left '+' '-'
+%left '*' '/'
 %%
 
--- eventBased : vexpr            { $1 }
+EventBased : Vexpr            { $1 }
 
-binop : '&&'                  {Logical_And}
+Binop : '&&'                  {Logical_And}
       | '||'                  {Logical_Or}
       | '^'                   {Logical_Xor}
       | '=='                  {Structural_Equality}
@@ -102,39 +112,80 @@ binop : '&&'                  {Logical_And}
       | '*'                   {Multiply} 
       | '/'                   {Divide}
 
+Unop : '!'                    {Logical_Not}
 
-unop : '!'                    {Logical_Not}
-
-vexpr : '(' vexpr ')'         { $2 }
-      | vexpr binop vexpr     { VEBinop $2 $1 $3 }
-      | unop vexpr            { VEUnop $1 $2 }
+Vexpr : '(' Vexpr ')'         { $2 }
+      | Vexpr Binop Vexpr     { VEBinop $2 $1 $3 }
+      | Unop Vexpr            { VEUnop $1 $2 }
       | str                   { VEStr $1 }
       | int                   { VEInt $1 }
       | flt                   { VEFlt $1 }
       | bool                  { VEBool $1 }
-      | email                 { VEEmail $1 }
       | id                    { VEId $1 }
-      | call params ')'       { VECall $1 $2 }
+      | Callexpr              { $1 }
 
-params : params ',' vexpr     { $1 ++ [$3] }
-       | vexpr                { [$1] }
+Callexpr : call Params ')'    { VECall $1 $2 }
+
+Params : Params ',' Vexpr     { $1 ++ [$3] }
+       | Vexpr                { [$1] }
+
+Aexprs : {- empty -}                              { [] }
+       | Aexprs Aexpr                             { $1 ++ [$2] } 
+
+Aexpr : 'GATHER' '{' Records '}' 'INTO' extern ';'{ AEGather $3 (Extern $6) } 
+      | 'SEND' email Vexpr ';'                    { AESend (Email $2) $3 }
+      | 'EXECUTE' Callexpr ';'                    { AEExec $2 }
+      | 'IF' '(' Vexpr ')' Block ';'              { AEIf $3 $5 [] }
+      | 'IF' '(' Vexpr ')' Block 'ELSE' Block ';' { AEIf $3 $5 $7 }
+      | 'DO' id ';'                               { AEDo (ID $2) }
+      | Vassign                                   { $1 }
+   
+Records : Records ',' Record                      { $1 ++ [$3] }
+        | Record                                  { [$1] }
+
+Record : 'SAVE' Vexpr 'AS' extern                 { Record $2 (Extern $4)}
+
+Vassign : id ':=' Vexpr ';'                       { AEVassign (ID $1) $3 }
+
+Aassign : id ':=' Aexpr ';'                       { AAssign (ID $1) [$3] }
+        | id ':=' Block ';'                       { AAssign (ID $1) $3 }
+
+Block : '{' Aexprs '}'                            { $2 } 
+
+Interval : SubIntervals                           { Interval (sum $1) }
+
+SubIntervals : SubIntervals SubInterval           { $2 : $1 }
+             | SubInterval                        { [$1] }
+
+SubInterval : int 'SECS'                          { $1 }
+            | int 'MINS'                          { $1 * 60 }
+            | int 'HOURS'                         { $1 * 60 * 60 } 
+            | int 'DAYS'                          { $1 * 60 * 60 * 24 }
 
 {
-{-
 
 newtype ID = ID String 
            deriving (Show,Read,Eq,Ord)
 
-newtype Rule = Rule Event [Action]  
+newtype Email = Email String
+              deriving (Show,Read,Eq,Ord)
+
+newtype Extern = Extern String
+               deriving (Show,Read,Eq,Ord)
+
+data AAssign = AAssign ID [AExpr]
              deriving (Show,Read,Eq,Ord)
+             
+data AExpr = AEGather [Record] Extern 
+           | AESend Email VExpr
+           | AEExec VExpr
+           | AEIf VExpr [AExpr] [AExpr]
+           | AEDo ID
+           | AEVassign ID VExpr 
+           deriving (Show,Read,Eq,Ord)
 
-data Assignable = AsblVal VExpr
-                | AsblAct [Action]
-                deriving (Show,Read,Eq,Ord)
-
-type Assignment = (ID,Assignable)
-
--}
+data Record = Record VExpr Extern
+            deriving (Show,Read,Eq,Ord)
 
 data VExpr = VEBinop BinOp VExpr VExpr
            | VEUnop UnOp VExpr
@@ -165,6 +216,9 @@ data BinOp = Logical_And
 data UnOp = Logical_Not
           deriving (Show,Read,Eq,Ord)
 
+newtype Interval = Interval Int -- Units are seconds 
+                 deriving (Show,Read,Eq,Ord)
+
 {-
 -- The AST type
 data Program = Program {
@@ -183,7 +237,7 @@ addRule p r =  p{rules=nr}
 -}
 
 parseError :: [L.Token] -> a
-parseError _ = error "Parse error" 
+parseError = error . ("Parse error on token : " ++) . ppShow
 
 
 }

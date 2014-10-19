@@ -19,7 +19,8 @@ executable SensorNet-Lexer
   hs-source-dirs:    src
   other-modules:     Language.EventBased.Lexer
   build-depends:     base ==4.6.*,
-                     array
+                     array,
+                     pretty-show
   build-tools:       alex, 
                      happy
 
@@ -30,6 +31,7 @@ executable SensorNet-Parser
   other-modules:     Language.EventBased.Lexer,
                      Language.EventBased.Parser
   build-depends:     base ==4.6.*,
-                     array
+                     array,
+                     pretty-show
   build-tools:       alex, 
                      happy
