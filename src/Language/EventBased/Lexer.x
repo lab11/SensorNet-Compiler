@@ -10,8 +10,8 @@ module Language.EventBased.Lexer
     Token(..)
   ) where
 
-import Data.Time (defaultTimeLocale,ParseTime)
-import Data.Time.Format (parseTimeOrError)
+import Data.Time (ParseTime)
+import Data.Time.Format (parseTimeOrError,defaultTimeLocale)
 import Data.Time.LocalTime (LocalTime,TimeOfDay)
 }
 
