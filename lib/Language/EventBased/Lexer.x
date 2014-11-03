@@ -84,7 +84,7 @@ tokens :-
 
   -- Time Keywords
 
-  "d" ("ay" "s"?)?            { \s -> (RelTime Days) } -- matches : 'd' 'day' 'days'
+  "d" ("ay" "s"?)?            { \s -> (RelTime Days) } 
   "h" "ou"? "r" "s"?          { \s -> (RelTime Hours) } 
   "m" ("in" "ute"? "s"?)?     { \s -> (RelTime Minutes) } 
   "s" ("ec" "ond"? "s"?)?     { \s -> (RelTime Seconds) }
@@ -217,12 +217,10 @@ data Token = Key Keyword
            | Lit Literals
            deriving (Eq,Show,Read)
 
-
 {-
   Option : Proc on Timer 
   Option : Proc on Interrupt 
 -} 
-
 
 parseTime :: ParseTime t => String -> String -> t
 parseTime = parseTimeOrError True defaultTimeLocale 
