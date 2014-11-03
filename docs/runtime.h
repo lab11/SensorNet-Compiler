@@ -13,7 +13,7 @@
  *   func - The callback to be executed when the semaphor is completely 
  *          released, which is also where error handling can go. 
  *   sem_id - the semaphor on which join() will block, waiting until there
- *            are no other threads the own the semaphor, or till the timeout
+ *            are no other threads that own the semaphor, or till the timeout
  *            has passed. 
  *   timeout - the number of seconds to wait before deciding one of the spawned
  *             threads has failed and returning to the user.

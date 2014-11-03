@@ -20,10 +20,10 @@ executable SensorNet-Lexer
   other-modules:     Language.EventBased.Lexer
   build-depends:     base ==4.6.*,
                      array,
-                     pretty-show
+                     pretty-show,
+                     time
   build-tools:       alex, 
                      happy
-
 
 executable SensorNet-Parser
   main-is:           Parser.hs 
@@ -32,6 +32,7 @@ executable SensorNet-Parser
                      Language.EventBased.Parser
   build-depends:     base ==4.6.*,
                      array,
-                     pretty-show
+                     pretty-show,
+                     time
   build-tools:       alex, 
                      happy

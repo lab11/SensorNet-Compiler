@@ -35,20 +35,22 @@ import qualified Language.EventBased.Lexer as L
   'SEND'                      {L.Key L.Send}
   'INTO'                      {L.Key L.Into}
   'EXECUTE'                   {L.Key L.Execute}
+  'INTERRUPT'                 {L.Key L.Interrupt}
   'IF'                        {L.Key L.If}
   'ELSE'                      {L.Key L.Else}
   'DO'                        {L.Key L.Do}
   'SAVE'                      {L.Key L.Save}
   'AS'                        {L.Key L.As}
   'SET OPTIONS'               {L.Key L.Set_Options}
+  'STARTING AT'               {L.Key L.Starting_At}
   'UPDATE'                    {L.Key L.Update} 
 
   -- Time Keywords
 
-  'DAYS'                      {L.Time L.Days}
-  'HOURS'                     {L.Time L.Hours}
-  'MINS'                      {L.Time L.Minutes}
-  'SECS'                      {L.Time L.Seconds}
+  'DAYS'                      {L.RelTime L.Days}
+  'HOURS'                     {L.RelTime L.Hours}
+  'MINS'                      {L.RelTime L.Minutes}
+  'SECS'                      {L.RelTime L.Seconds}
 
   -- Flow Control 
 
@@ -88,9 +90,12 @@ import qualified Language.EventBased.Lexer as L
   bool                        {L.Lit (L.Boolean $$)}
   email                       {L.Lit (L.Email $$)}
   id                          {L.Lit (L.Identifier $$)}
-  extern                      {L.Lit (L.Extern $$)}
+  timeOfDay                   {L.Lit (L.DailyTime $$)}  
+  absTime                     {L.Lit (L.AbsTime $$)}
+  extern                      {L.Lit (L.Extern $$)}   
   call                        {L.Lit (L.CallOpen $$)} -- Remember this comes with
                                                       --  an attached '('
+
 %nonassoc '>' '<' '<=' '>=' '=='
 %left '+' '-'
 %left '*' '/'

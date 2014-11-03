@@ -9,6 +9,10 @@ module Language.EventBased.Lexer
     Literals(..),
     Token(..)
   ) where
+
+import Data.Time (defaultTimeLocale,ParseTime)
+import Data.Time.Format (parseTimeOrError)
+import Data.Time.LocalTime (LocalTime,TimeOfDay)
 }
 
 %wrapper "basic"
@@ -23,6 +27,19 @@ $special  = [\.\;\,\$\|\*\+\?\#\~\-\{\}\(\)\[\]\^\/]
 $alphanum = [$alpha $digit]
 $emailid  = [$alpha $digit \. \- \+]
 $identifierchars = [$alpha $digit \_ \- \']
+
+@month    = ('0'? [1-9]| '1' [12])
+@day      = ('0'? [1-9]| [1-2][0-9]|'3'[01])
+@year     = ('1' '9'|'2' [0-9])[0-9][0-9]
+@date     = @month '\/' @day '\/' @year
+
+@hour24     = (('0'?|'1')[0-9]|'2'[0-4])
+@hour12     = ('0'?[0-9]|'1'[0-2])
+@minute     = [0-5][0-9]
+@second     = [0-5][0-9]
+@dayhalf    = ('a'|'p')'m'
+@time12     = @hour12 ':' @minute ':' @second $white+ @dayhalf
+@time24     = @hour12 ':' @minute ':' @second 
 
 @escape     = '\\' ($printable | 'x' $hexdig+ | 'o' $octdig+ | $digit+ ) 
 @char       = ($printable # $special) | @escape
@@ -52,6 +69,7 @@ tokens :-
   "PERFORM"                   { \s -> (Key Perform) } 
   "WITH" $white+ "COOLDOWN"   { \s -> (Key With_Cooldown) }
   "WITHIN"                    { \s -> (Key Within) }
+  "INTERRUPT"                 { \s -> (Key Interrupt) }
   "GATHER"                    { \s -> (Key Gather) }
   "SEND"                      { \s -> (Key Send) }
   "EXECUTE"                   { \s -> (Key Execute) }
@@ -61,14 +79,15 @@ tokens :-
   "INTO"                      { \s -> (Key Into) }
   "AS"                        { \s -> (Key As) }
   "SET" $white+ "OPTIONS"     { \s -> (Key Set_Options) }
+  "STARTING" $white+ "AT"     { \s -> (Key Starting_At) }
   "UPDATE"                    { \s -> (Key Update) } 
 
   -- Time Keywords
 
-  "d" ("ay" "s"?)?            { \s -> (Time Days) } -- matches : 'd' 'day' 'days'
-  "h" "ou"? "r" "s"?          { \s -> (Time Hours) } 
-  "m" ("in" "ute"? "s"?)?     { \s -> (Time Minutes) } 
-  "s" ("ec" "ond"? "s"?)?     { \s -> (Time Seconds) }
+  "d" ("ay" "s"?)?            { \s -> (RelTime Days) } -- matches : 'd' 'day' 'days'
+  "h" "ou"? "r" "s"?          { \s -> (RelTime Hours) } 
+  "m" ("in" "ute"? "s"?)?     { \s -> (RelTime Minutes) } 
+  "s" ("ec" "ond"? "s"?)?     { \s -> (RelTime Seconds) }
 
   -- Flow Control Elements
 
@@ -112,6 +131,14 @@ tokens :-
   @opencall                   { \s -> (Lit (CallOpen $ init s)) }
   @external                   { \s -> (Lit (Extern s)) }
 
+  -- Absolute Time Literals 
+
+  @date                       { \s -> (Lit (AbsTime (parseTime "%D" s)))}
+  @date @time12               { \s -> (Lit (AbsTime (parseTime "%D %r" s)))}
+  @date @time24               { \s -> (Lit (AbsTime (parseTime "%D %X" s)))}
+  @time24                     { \s -> (Lit (DailyTime (parseTime "%X" s)))}
+  @time12                     { \s -> (Lit (DailyTime (parseTime "%r" s)))}
+  
 {
 
 data Literals = Str String
@@ -122,6 +149,8 @@ data Literals = Str String
               | Email String
               | CallOpen String
               | Extern String
+              | AbsTime LocalTime
+              | DailyTime TimeOfDay 
             	deriving (Eq,Show,Read)
 
 data Operators = Logical_And
@@ -170,7 +199,9 @@ data Keyword = On
         	   | Save
         	   | As
         	   | Set_Options
+             | Starting_At
              | Update
+             | Interrupt
         	   deriving(Eq,Show,Read)
 
 data TimeKeyword = Days
@@ -180,7 +211,7 @@ data TimeKeyword = Days
             	   deriving(Eq,Show,Read)
 
 data Token = Key Keyword
-           | Time TimeKeyword
+           | RelTime TimeKeyword
            | Flow FlowControl
            | Op Operators
            | Lit Literals
@@ -191,6 +222,10 @@ data Token = Key Keyword
   Option : Proc on Timer 
   Option : Proc on Interrupt 
 -} 
+
+
+parseTime :: ParseTime t => String -> String -> t
+parseTime = parseTimeOrError True defaultTimeLocale 
 
 tokenize :: String -> [Token]
 tokenize = alexScanTokens
