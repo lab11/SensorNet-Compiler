@@ -5,14 +5,15 @@ import Data.Char
 import Data.Time.Calendar
 import Data.Time.LocalTime
 
--- Create a series of tests that make sure whether a particular token 
--- is parsed correctly
 
 tokenTest s a = it ("should parse " ++ (show s)) $ do
                   tokenize s `shouldBe` a
 
 tokenError s a = it ("should error " ++ (show s)) $ do
                       tokenize s `shouldSatisfy` (/= a)
+
+-- Create a series of tests that make sure whether a particular token 
+-- is parsed correctly
 
 tokenSpace s a =  do
                     tokenTest ("  " ++ s) a
