@@ -108,7 +108,7 @@ tokens :-
   "||"                        { \s -> (Op Logical_Or) }
   "^"                         { \s -> (Op Logical_Xor) }
   "!"                         { \s -> (Op Logical_Not) }
-  "="                         { \s -> (Op Structural_Equality) }
+  "=="                         { \s -> (Op Structural_Equality) }
   ">"                         { \s -> (Op Greater_Than) }
   ">="                        { \s -> (Op Greater_Than_Equals) }
   "<"                         { \s -> (Op Less_Than) }

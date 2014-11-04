@@ -22,12 +22,19 @@ runTests t = mapM_ $ uncurry t
 valExpr = valParse . tokenize
 
 valTest = parseTest valExpr 
+valParenTest s = parseTest valExpr ("(" ++ s ++ ")")
+
+valTestSuite s a = do 
+                      valTest s a
+                      valParenTest s a 
 
 -- valError = parseError valExpr
 
-valTests = runTests valTest
+valTests = runTests valTestSuite
 
 valStrTest s = (show s, VEStr s)
+
+-- Simple Static Tests for Literal Values 
 
 valLiteralPairs = [
 
@@ -60,6 +67,37 @@ valLiteralPairs = [
   ("camelCase",VEId "camelCase"),
   ("numberedVar1",VEId "numberedVar1")]
 
+valSimpleExpressions = [
+
+  --------- Arithmetic Operators ----------
+
+  ("1 + 2.3",VEBinop Add (VEInt 1) (VEFlt 2.3)),
+  ("1 - 2.3",VEBinop Subtract (VEInt 1) (VEFlt 2.3)),
+  ("1 * 2.3",VEBinop Multiply (VEInt 1) (VEFlt 2.3)),
+  ("1 / 2.3",VEBinop Divide (VEInt 1) (VEFlt 2.3)),
+
+  ---------- Boolean Ops --------------
+  
+  ("True && False",VEBinop Logical_And (VEBool True) (VEBool False)),
+  ("True || False",VEBinop Logical_Or (VEBool True) (VEBool False)),
+  ("True ^ False",VEBinop Logical_Xor (VEBool True) (VEBool False)),
+  ("! True",VEUnop Logical_Not $ VEBool True),
+
+  ---------- Comparison Ops ------------
+  
+  ("varA >= 10", VEBinop Greater_Than_Equals (VEId "varA") (VEInt 10)),
+  ("varA > 10", VEBinop Greater_Than (VEId "varA") (VEInt 10)),
+  ("varA <= 10", VEBinop Less_Than_Equals (VEId "varA") (VEInt 10)),
+  ("varA < 10", VEBinop Less_Than (VEId "varA") (VEInt 10)),
+  ("varA == 10", VEBinop Structural_Equality (VEId "varA") (VEInt 10)),
+
+  ------------- String Ops --------------
+  
+  ([i|"this" << " and that."|], VEBinop String_Append (VEStr "this") 
+                                                      (VEStr " and that."))
+
+  ]
+  
 
 
 spec :: Spec
@@ -70,4 +108,6 @@ spec =  do
         valTests valLiteralPairs
       it "QuickCheck Based Tests" $
         pendingWith "TODO: Learn Quick Check"
-:
+      context "Simple Expressions" $ do
+        valTests valSimpleExpressions
+
