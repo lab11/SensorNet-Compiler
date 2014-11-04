@@ -97,8 +97,8 @@ import qualified Language.EventBased.Lexer as L
                                                       --  an attached '('
 
 %nonassoc '>' '<' '<=' '>=' '=='
-%left '+' '-'
-%left '*' '/'
+%left '+' '-' '&&'
+%left '*' '/' '||'
 %%
 
 EventBased : Vexpr            { $1 }

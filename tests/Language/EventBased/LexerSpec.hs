@@ -4,7 +4,7 @@ import SpecHelper
 import Data.Char
 import Data.Time.Calendar
 import Data.Time.LocalTime
-
+import Language.EventBased.Lexer
 
 tokenTest s a = it ("should parse " ++ (show s)) $ do
                   tokenize s `shouldBe` a
