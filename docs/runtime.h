@@ -150,8 +150,8 @@ int get_node_id();
 
 // ------------ Temprature Sensor OPs -------------
 
-// Returns the temprature in Celcius
-float get_temprature();
+// Returns the temperature in Celsius
+float get_temperature();
 
 // ------------ Brightness Sensor OPs -------------
 
