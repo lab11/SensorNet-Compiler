@@ -88,7 +88,31 @@ absoluteTimePairs = [("10/10/1923",makeDateTime 10 10 1923 0 0 0),
                      ("23:23:15",makeTimeOfDay 23 23 15),
                      ("11:23:15 pm",makeTimeOfDay 23 23 15)]
 
+flowControlPairs = [("(",Flow OpParen),
+                    (")",Flow ClParen),
+                    ("{",Flow OpBracket),
+                    ("}",Flow ClBracket),
+                    ("[",Flow OpSqBracket),
+                    ("]",Flow ClSqBracket),
+                    (";",Flow Semicolon),
+                    (":",Flow Colon),
+                    (",",Flow Comma),
+                    (":=",Flow Assign)]
 
+operatorPairs = [("&&",Op Logical_And),
+                 ("||",Op Logical_Or),
+                 ("^",Op Logical_Xor),
+                 ("!",Op Logical_Not),
+                 ("=",Op Structural_Equality),
+                 (">",Op Greater_Than),
+                 (">=",Op Greater_Than_Equals),
+                 ("<",Op Less_Than),
+                 ("<=",Op Less_Than_Equals),
+                 ("<<",Op String_Append), 
+                 ("+",Op Add), 
+                 ("-",Op Subtract),
+                 ("*",Op Multiply), 
+                 ("/",Op Divide)]
 
 spec :: Spec
 spec = do
@@ -99,4 +123,16 @@ spec = do
       tokenTests timeKeyPairs
     context "Parses of absolute times" $ do
       tokenTests absoluteTimePairs
-      
+  describe "Flow control elements" $ do
+    tokenTests flowControlPairs
+  describe "Operators" $ do
+    tokenTests operatorPairs
+  describe "Other Literals" $ do
+    it "TODO: will run quickcheck tests for these" $
+      pendingWith "Need to learn QuickCheck to do this properly"
+  describe "Integration Tests" $ 
+    it "TODO: will run quickcheck tests for these" $
+      pendingWith "Need to learn QuickCheck to do this properly"
+  describe "Error Tests" $  
+    it "TODO: will run quickcheck tests for these" $
+      pendingWith "Need to learn QuickCheck to do this properly"

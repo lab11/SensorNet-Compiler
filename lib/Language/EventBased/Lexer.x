@@ -117,7 +117,7 @@ tokens :-
   "+"                         { \s -> (Op Add) } 
   "-"                         { \s -> (Op Subtract) }
   "*"                         { \s -> (Op Multiply) } 
-  --"/"                         { \s -> (Op Divide) }
+  "/"                         { \s -> (Op Divide) }
 
   -- Literals                 
 
