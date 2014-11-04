@@ -85,7 +85,7 @@ tokens :-
   -- Time Keywords
 
   "d" ("ay" "s"?)?            { \s -> (RelTime Days) } 
-  "h" "ou"? "r" "s"?          { \s -> (RelTime Hours) } 
+  "h" ("ou"? "r" "s"?)?          { \s -> (RelTime Hours) } 
   "m" ("in" "ute"? "s"?)?     { \s -> (RelTime Minutes) } 
   "s" ("ec" "ond"? "s"?)?     { \s -> (RelTime Seconds) }
 

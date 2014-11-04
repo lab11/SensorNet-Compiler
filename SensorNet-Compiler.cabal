@@ -25,11 +25,12 @@ library
   build-tools:       alex, 
                      happy
 
-
 executable SensorNet-Lexer
   main-is:           Lexer.hs   
   hs-source-dirs:    src
-  build-depends:     base >= 4.6, 
+  build-depends:     base >= 4.6,
+                     array,
+                     time >= 1.5,
                      pretty-show,
                      sensornet
 
@@ -37,6 +38,16 @@ executable SensorNet-Parser
   main-is:           Parser.hs 
   hs-source-dirs:    src
   build-depends:     base >= 4.6,
+                     array,
+                     time >= 1.5,
                      pretty-show,
                      sensornet
 
+test-suite test-suite
+   build-depends:    base, 
+                     sensornet,
+                     QuickCheck,
+                     hspec >= 1.8
+   hs-source-dirs:   tests
+   main-is:          Spec.hs 
+   type:             exitcode-stdio-1.0
