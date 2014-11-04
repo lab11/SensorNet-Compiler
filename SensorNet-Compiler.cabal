@@ -47,6 +47,7 @@ test-suite test-suite
    build-depends:    base, 
                      sensornet,
                      QuickCheck,
+                     time,
                      hspec >= 1.8
    hs-source-dirs:   tests
    main-is:          Spec.hs 

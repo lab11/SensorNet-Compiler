@@ -28,18 +28,18 @@ $alphanum = [$alpha $digit]
 $emailid  = [$alpha $digit \. \- \+]
 $identifierchars = [$alpha $digit \_ \- \']
 
-@month    = ('0'? [1-9]| '1' [12])
-@day      = ('0'? [1-9]| [1-2][0-9]|'3'[01])
-@year     = ('1' '9'|'2' [0-9])[0-9][0-9]
-@date     = @month '\/' @day '\/' @year
+@month    = ("0"? [1-9]| "1" [0-2])
+@day      = ("0"? [1-9]| [1-2][0-9] | "3" [0-1])
+@year     = ("19" [0-9]{2}| "2" [0-9]{3})
+@date     = @month "/" @day "/" @year
 
-@hour24     = (('0'?|'1')[0-9]|'2'[0-4])
-@hour12     = ('0'?[0-9]|'1'[0-2])
+@hour24     = (("0"?|"1")[0-9]|"2"[0-3])
+@hour12     = ("0"? [1-9]|"1"[0-2])
 @minute     = [0-5][0-9]
 @second     = [0-5][0-9]
-@dayhalf    = ('a'|'p')'m'
-@time12     = @hour12 ':' @minute ':' @second $white+ @dayhalf
-@time24     = @hour12 ':' @minute ':' @second 
+@dayhalf    = ("a"|"p")"m"
+@time12     = @hour12 ":" @minute ":" @second $white+ @dayhalf
+@time24     = @hour24 ":" @minute ":" @second 
 
 @escape     = '\\' ($printable | 'x' $hexdig+ | 'o' $octdig+ | $digit+ ) 
 @char       = ($printable # $special) | @escape
@@ -57,7 +57,7 @@ tokens :-
   -- Strucutral Elements
 
   $white+				              ;
-  "--".*				;
+  "--".*				              ;
   
   -- Keywords 
 
@@ -85,7 +85,7 @@ tokens :-
   -- Time Keywords
 
   "d" ("ay" "s"?)?            { \s -> (RelTime Days) } 
-  "h" ("ou"? "r" "s"?)?          { \s -> (RelTime Hours) } 
+  "h" ("ou"? "r" "s"?)?       { \s -> (RelTime Hours) } 
   "m" ("in" "ute"? "s"?)?     { \s -> (RelTime Minutes) } 
   "s" ("ec" "ond"? "s"?)?     { \s -> (RelTime Seconds) }
 
@@ -117,7 +117,7 @@ tokens :-
   "+"                         { \s -> (Op Add) } 
   "-"                         { \s -> (Op Subtract) }
   "*"                         { \s -> (Op Multiply) } 
-  "/"                         { \s -> (Op Divide) }
+  --"/"                         { \s -> (Op Divide) }
 
   -- Literals                 
 
@@ -133,9 +133,9 @@ tokens :-
 
   -- Absolute Time Literals 
 
-  @date                       { \s -> (Lit (AbsTime (parseTime "%D" s)))}
-  @date @time12               { \s -> (Lit (AbsTime (parseTime "%D %r" s)))}
-  @date @time24               { \s -> (Lit (AbsTime (parseTime "%D %X" s)))}
+  @date                       { \s -> (Lit (AbsTime (parseTime "%m/%d/%Y" s)))}
+  @date $white+ @time12       { \s -> (Lit (AbsTime (parseTime "%m/%d/%Y %r" s)))}
+  @date $white+ @time24       { \s -> (Lit (AbsTime (parseTime "%m/%d/%Y %X" s)))}
   @time24                     { \s -> (Lit (DailyTime (parseTime "%X" s)))}
   @time12                     { \s -> (Lit (DailyTime (parseTime "%r" s)))}
   
