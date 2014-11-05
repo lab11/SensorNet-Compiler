@@ -47,7 +47,7 @@ $identifierchars = [$alpha $digit \_ \- \']
 @float      = [\+\-]? $digit+ (\. $digit+ | (\. $digit+)? ([Ee] [\+ \-]? $digit+)?) 
 @email      = $emailid+ \@ $alphanum+ (\. $alphanum+)+
 @identifier = $lower $identifierchars*
-@external   = $upper $identifierchars*
+@external   = $upper ($identifierchars* $lower $identifierchars*)?
 @opencall   = @external \(
 @string     = \" ($printable # \" | @escape)* \"  -- " -- This comment keeps the
                                                        -- syntax hilighter happy
@@ -74,6 +74,7 @@ tokens :-
   "SEND"                      { \s -> (Key Send) }
   "EXECUTE"                   { \s -> (Key Execute) }
   "IF"                        { \s -> (Key If) }
+  "ELSE"                      { \s -> (Key Else) }
   "DO"                        { \s -> (Key Do) }
   "SAVE"                      { \s -> (Key Save) }
   "INTO"                      { \s -> (Key Into) }

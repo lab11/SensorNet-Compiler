@@ -4,6 +4,10 @@ module Language.EventBased.Parser
   VExpr(..),
   BinOp(..),
   UnOp(..),
+  AExpr(..),
+  Record(..),
+  Email(..),
+  ID(..),
   valParse,
   actParse,
 ) where
@@ -94,7 +98,7 @@ import qualified Language.EventBased.Lexer as L
   absTime                     {L.Lit (L.AbsTime $$)}
   extern                      {L.Lit (L.Extern $$)}   
   call                        {L.Lit (L.CallOpen $$)} -- Remember this comes with
-                                                      --  an attached '('
+                                                      -- an attached '('
 
 %nonassoc '>' '<' '<=' '>=' '=='
 %left '+' '-' '||' '<<'
@@ -135,7 +139,7 @@ Params : Params ',' Vexpr     { $1 ++ [$3] }
 Aexprs : {- empty -}                              { [] }
        | Aexprs Aexpr                             { $1 ++ [$2] } 
 
-Aexpr : 'GATHER' '{' Records '}' 'INTO' extern ';'{ AEGather $3 (Extern $6) } 
+Aexpr : 'GATHER' '{' Records '}' 'INTO' extern ';'{ AEGather $3 $6 } 
       | 'SEND' email Vexpr ';'                    { AESend (Email $2) $3 }
       | 'EXECUTE' Callexpr ';'                    { AEExec $2 }
       | 'IF' '(' Vexpr ')' Block ';'              { AEIf $3 $5 [] }
@@ -146,7 +150,7 @@ Aexpr : 'GATHER' '{' Records '}' 'INTO' extern ';'{ AEGather $3 (Extern $6) }
 Records : Records ',' Record                      { $1 ++ [$3] }
         | Record                                  { [$1] }
 
-Record : 'SAVE' Vexpr 'AS' extern                 { Record $2 (Extern $4)}
+Record : 'SAVE' Vexpr 'AS' id                     { Record $2 $4}
 
 Vassign : id ':=' Vexpr ';'                       { AEVassign (ID $1) $3 }
 
@@ -179,7 +183,7 @@ newtype Extern = Extern String
 data AAssign = AAssign ID [AExpr]
              deriving (Show,Read,Eq,Ord)
              
-data AExpr = AEGather [Record] Extern 
+data AExpr = AEGather [Record] String 
            | AESend Email VExpr
            | AEExec VExpr
            | AEIf VExpr [AExpr] [AExpr]
@@ -187,7 +191,7 @@ data AExpr = AEGather [Record] Extern
            | AEVassign ID VExpr 
            deriving (Show,Read,Eq,Ord)
 
-data Record = Record VExpr Extern
+data Record = Record VExpr String
             deriving (Show,Read,Eq,Ord)
 
 data VExpr = VEBinop BinOp VExpr VExpr

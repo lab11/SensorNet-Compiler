@@ -38,6 +38,18 @@ valErrors = runTests valError
 
 valStrTest s = (show s, VEStr s)
 
+--- Setup Testing for Action Expressions 
+
+actExpr = actParse . tokenize
+
+actTest = parseTest actExpr 
+
+actError = parseError actExpr
+
+actTests = runTests (uncurry actTest)
+
+actErrors = runTests actError
+
 -- Simple Static Tests for Literal Values 
 
 valLiteralPairs = [
@@ -70,6 +82,8 @@ valLiteralPairs = [
   ("local_variable",VEId "local_variable"),
   ("camelCase",VEId "camelCase"),
   ("numberedVar1",VEId "numberedVar1")]
+
+-- Static Tests for Expressions
 
 valSimpleExpressionPairs = [
 
@@ -136,6 +150,58 @@ valCallExprPairs = [
                                   VECall "Nested_Call" []])
   ]
   
+-- Static Tests for Actions 
+
+actGatherPairs = [
+  ([here|
+  GATHER { 
+    SAVE Node_Id() AS id, 
+    SAVE Temperature() AS temp, 
+    SAVE Other_Sensor(1,2,3) AS other
+  } INTO Table_Temp_Data;
+  |], AEGather 
+        [Record (VECall "Node_Id" []) "id",
+        Record (VECall "Temperature" []) "temp",
+        Record (VECall "Other_Sensor" [VEInt 1,VEInt 2,VEInt 3]) "other"]
+      "Table_Temp_Data" )]
+
+actSendPairs = [
+  ([i|SEND foo@foobar.com "This is a string";|]
+  ,AESend (Email "foo@foobar.com") (VEStr "This is a string"))]
+
+actExecutePairs = [
+  ([i|EXECUTE Get_Sample();|],AEExec $ VECall "Get_Sample" [])]
+
+actIfPairs = [
+  ([here|
+
+  IF (2 < 3){
+    SEND foo@foobar.com "This is a string";
+    EXECUTE Get_Sample();
+  };
+
+  |], AEIf (VEBinop Less_Than (VEInt 2) (VEInt 3))
+           [AESend (Email "foo@foobar.com") (VEStr "This is a string"),
+            AEExec $ VECall "Get_Sample" []] [] ) ,
+  ([here|
+
+  IF(2 < 3) {
+    SEND foo@foobar.com "This is a string";
+  } ELSE { 
+    EXECUTE Get_Sample();
+  };
+
+  |], AEIf (VEBinop Less_Than (VEInt 2) (VEInt 3))
+           [AESend (Email "foo@foobar.com") (VEStr "This is a string")]
+           [AEExec $ VECall "Get_Sample" []] )
+  ]
+
+actDoPairs = [
+  ("DO this;", AEDo $ ID "this")]
+
+actAssignPairs = [
+  ("foo := bar + 1;", AEVassign (ID "foo") (VEBinop Add (VEId "bar") (VEInt 1)))
+  ]
 
 spec :: Spec
 spec =  do
@@ -143,6 +209,8 @@ spec =  do
     context "Literals" $ do
       context "Simple Static Tests" $ do
         valTests valLiteralPairs
+      it "Values that should not parse" $ 
+        pendingWith "TODO: add tests for identifiers and call expressions"
       it "QuickCheck Based Tests" $
         pendingWith "TODO: Learn Quick Check"
     context "Simple Expressions" $ do
@@ -151,5 +219,37 @@ spec =  do
       valTests valPredAndAssocPairs
       valErrors valNonAssocErrors
     context "Call Expression Tests" $ do 
-      valTests valCallExprPairs 
+      valTests valCallExprPairs
+    context "Arbitrary Value Composition Tests" $ do
+      it "Generated Action Tests" $ do 
+        pendingWith "TODO : Learn QuickCheck"
+  describe "Action Expressions" $ do
+    context "Gather Actions" $ do 
+      actTests actGatherPairs 
+      it "Values that should not parse" $ 
+        pendingWith "We need counter examples" 
+    context "Send Actions" $ do
+      actTests actSendPairs
+      it "Values that should not parse" $ 
+        pendingWith "We need counter examples" 
+    context "Execute Actions" $ do
+      actTests actExecutePairs
+      it "Values that should not parse" $ 
+        pendingWith "We need counter examples" 
+    context "If Actions" $ do 
+      actTests actIfPairs
+      it "Values that should not parse" $ 
+        pendingWith "We need counter examples" 
+    context "Do Actions" $ do 
+      actTests actDoPairs
+      it "Values that should not parse" $ 
+        pendingWith "We need counter examples"
+    context "Assignment Actions" $ do 
+      actTests actAssignPairs 
+      it "Values that should not parse" $ 
+        pendingWith "We need counter examples"
+    context "Action Blocks" $ do 
+      it "Test a number of blocks" $
+        pendingWith "TODO: Need to learn QuickCheck to do this properly"
+
 
