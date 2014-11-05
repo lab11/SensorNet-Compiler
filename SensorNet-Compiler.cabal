@@ -49,6 +49,7 @@ test-suite test-suite
                      QuickCheck,
                      time,
                      here,
+                     deepseq,
                      hspec >= 1.8
    hs-source-dirs:   tests
    main-is:          Spec.hs 

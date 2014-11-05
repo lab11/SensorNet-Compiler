@@ -97,31 +97,28 @@ import qualified Language.EventBased.Lexer as L
                                                       --  an attached '('
 
 %nonassoc '>' '<' '<=' '>=' '=='
-%left '+' '-' '&&'
-%left '*' '/' '||'
+%left '+' '-' '||' '<<'
+%left '*' '/' '&&'
+%right '!'
 %%
 
 EventBased : Vexpr            { $1 }
 
-Binop : '&&'                  {Logical_And}
-      | '||'                  {Logical_Or}
-      | '^'                   {Logical_Xor}
-      | '=='                  {Structural_Equality}
-      | '>'                   {Greater_Than}
-      | '>='                  {Greater_Than_Equals}
-      | '<'                   {Less_Than}
-      | '<='                  {Less_Than_Equals}
-      | '<<'                  {String_Append} 
-      | '+'                   {Add} 
-      | '-'                   {Subtract}
-      | '*'                   {Multiply} 
-      | '/'                   {Divide}
-
-Unop : '!'                    {Logical_Not}
-
 Vexpr : '(' Vexpr ')'         { $2 }
-      | Vexpr Binop Vexpr     { VEBinop $2 $1 $3 }
-      | Unop Vexpr            { VEUnop $1 $2 }
+      | Vexpr '&&' Vexpr      { VEBinop Logical_And $1 $3}
+      | Vexpr '||' Vexpr      { VEBinop Logical_Or $1 $3}
+      | Vexpr '^' Vexpr       { VEBinop Logical_Xor $1 $3}
+      | Vexpr '==' Vexpr      { VEBinop Structural_Equality $1 $3}
+      | Vexpr '>' Vexpr       { VEBinop Greater_Than $1 $3}
+      | Vexpr '>=' Vexpr      { VEBinop Greater_Than_Equals $1 $3}
+      | Vexpr '<' Vexpr       { VEBinop Less_Than $1 $3}
+      | Vexpr '<=' Vexpr      { VEBinop Less_Than_Equals $1 $3}
+      | Vexpr '<<' Vexpr      { VEBinop String_Append $1 $3} 
+      | Vexpr '+' Vexpr       { VEBinop Add $1 $3} 
+      | Vexpr '-' Vexpr       { VEBinop Subtract $1 $3}
+      | Vexpr '*' Vexpr       { VEBinop Multiply $1 $3} 
+      | Vexpr '/' Vexpr       { VEBinop Divide $1 $3}
+      | '!' Vexpr             { VEUnop Logical_Not $2 }
       | str                   { VEStr $1 }
       | int                   { VEInt $1 }
       | flt                   { VEFlt $1 }
@@ -133,6 +130,7 @@ Callexpr : call Params ')'    { VECall $1 $2 }
 
 Params : Params ',' Vexpr     { $1 ++ [$3] }
        | Vexpr                { [$1] }
+       | {- empty -}          { [] }
 
 Aexprs : {- empty -}                              { [] }
        | Aexprs Aexpr                             { $1 ++ [$2] } 

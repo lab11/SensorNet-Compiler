@@ -6,16 +6,18 @@ import SpecHelper
 import Data.String.Here (here,i)
 import Language.EventBased.Parser
 import Language.EventBased.Lexer (tokenize)
+import Control.Exception (evaluate)
+import Control.DeepSeq (force)
 
 -- General utility functions
 
 parseTest p s e = it ("parsing " ++ (show s)) $ do 
                       (p s) `shouldBe` e
 
-parseError p s = it ("parsing " ++ (show s)) $ 
-                     (p s) `shouldThrow` anyErrorCall
+parseError p s = it ("errors with " ++ (show s)) $ do 
+                     ((evaluate . p)  s) `shouldThrow` anyErrorCall
 
-runTests t = mapM_ $ uncurry t
+runTests t = mapM_ t
 
 -- Setup Testing for Value Expressions 
 
@@ -28,9 +30,11 @@ valTestSuite s a = do
                       valTest s a
                       valParenTest s a 
 
--- valError = parseError valExpr
+valError = parseError valExpr
 
-valTests = runTests valTestSuite
+valTests = runTests (uncurry valTestSuite)
+
+valErrors = runTests valError
 
 valStrTest s = (show s, VEStr s)
 
@@ -67,7 +71,7 @@ valLiteralPairs = [
   ("camelCase",VEId "camelCase"),
   ("numberedVar1",VEId "numberedVar1")]
 
-valSimpleExpressions = [
+valSimpleExpressionPairs = [
 
   --------- Arithmetic Operators ----------
 
@@ -98,7 +102,40 @@ valSimpleExpressions = [
 
   ]
   
+valPredAndAssocPairs = [
 
+  -------- Associativity Tests -----------
+
+  ("1 + 2 + 3", VEBinop Add (VEBinop Add (VEInt 1) (VEInt 2)) (VEInt 3)),
+  ("1 - 2 + 3", VEBinop Add (VEBinop Subtract (VEInt 1) (VEInt 2)) (VEInt 3)),
+  ("1 * 2 + 3", VEBinop Add (VEBinop Multiply (VEInt 1) (VEInt 2)) (VEInt 3)),
+
+  ------------ Precedence Tests -------------
+
+  ("1 + 2 * 3", VEBinop Add (VEInt 1) (VEBinop Multiply (VEInt 2) (VEInt 3))),
+  ("(1 + 2) * 3", VEBinop Multiply (VEBinop Add (VEInt 1) (VEInt 2)) (VEInt 3)),
+  ("! var1 && ! var2",VEBinop Logical_And (VEUnop Logical_Not (VEId "var1"))
+                                          (VEUnop Logical_Not (VEId "var2")))
+  ]
+
+valNonAssocErrors = [
+  "1 == 2 == 3",
+  "1 >= 2 >= 3",
+  "1 <= 2 <= 3",
+  "1 < 2 < 3",
+  "1 > 2 > 3",
+  "1 > 2 < 3"
+  ]
+
+valCallExprPairs = [
+
+  ("TestCall()",VECall "TestCall" []),
+  ("TestCall(1,2,3,4)",VECall "TestCall" [VEInt 1,VEInt 2,VEInt 3, VEInt 4]),
+  ("TestCall(1 + 2, Nested_Call())",VECall "TestCall" 
+                                  [VEBinop Add (VEInt 1) (VEInt 2),
+                                  VECall "Nested_Call" []])
+  ]
+  
 
 spec :: Spec
 spec =  do
@@ -108,6 +145,11 @@ spec =  do
         valTests valLiteralPairs
       it "QuickCheck Based Tests" $
         pendingWith "TODO: Learn Quick Check"
-      context "Simple Expressions" $ do
-        valTests valSimpleExpressions
+    context "Simple Expressions" $ do
+      valTests valSimpleExpressionPairs
+    context "Precedence and Associativity" $ do
+      valTests valPredAndAssocPairs
+      valErrors valNonAssocErrors
+    context "Call Expression Tests" $ do 
+      valTests valCallExprPairs 
 
