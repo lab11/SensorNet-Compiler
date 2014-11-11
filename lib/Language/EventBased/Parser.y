@@ -2,24 +2,38 @@
 module Language.EventBased.Parser 
 (
   VExpr(..),
+  EExpr(..),
+  Interval(..),
   BinOp(..),
   UnOp(..),
   AExpr(..),
   Record(..),
   Email(..),
+  Extern(..),
   ID(..),
+  Rule(..),
+  Program(..),
+  progParse,
   valParse,
   actParse,
+  evtParse,
+  intParse,
 ) where
 
 import Text.Show.Pretty
 import qualified Language.EventBased.Lexer as L
+import Data.Time (ParseTime)
+import Data.Time.Clock (DiffTime,secondsToDiffTime)
+import Data.Time.Format (parseTimeOrError,defaultTimeLocale)
+import Data.Time.LocalTime (LocalTime,TimeOfDay)
 
 }
 
 %name valParse Vexpr
 %name actParse Aexpr
+%name evtParse Eexpr
 %name intParse Interval
+%name progParse Program
 %tokentype{ L.Token }
 %error{ parseError }
 
@@ -31,7 +45,7 @@ import qualified Language.EventBased.Lexer as L
   'EVERY'                     {L.Key L.Every}
   'AFTER'                     {L.Key L.After}
   'BEGINS'                    {L.Key L.Begins}
-  'END'                       {L.Key L.End}
+  'ENDS'                      {L.Key L.Ends}
   'PERFORM'                   {L.Key L.Perform} 
   'WITH COOLDOWN'             {L.Key L.With_Cooldown}
   'WITHIN'                    {L.Key L.Within}
@@ -47,6 +61,7 @@ import qualified Language.EventBased.Lexer as L
   'AS'                        {L.Key L.As}
   'SET OPTIONS'               {L.Key L.Set_Options}
   'STARTING AT'               {L.Key L.Starting_At}
+  'CHECKING EVERY'            {L.Key L.Checking_Every}
   'UPDATE'                    {L.Key L.Update} 
 
   -- Time Keywords
@@ -154,8 +169,8 @@ Record : 'SAVE' Vexpr 'AS' id                     { Record $2 $4}
 
 Vassign : id ':=' Vexpr ';'                       { AEVassign (ID $1) $3 }
 
-Aassign : id ':=' Aexpr ';'                       { AAssign (ID $1) [$3] }
-        | id ':=' Block ';'                       { AAssign (ID $1) $3 }
+Aassign : id ':=' Aexpr                           { AAssign (ID $1) [$3] }
+        | id ':=' Block                           { AAssign (ID $1) $3 }
 
 Block : '{' Aexprs '}'                            { $2 } 
 
@@ -168,6 +183,25 @@ SubInterval : int 'SECS'                          { $1 }
             | int 'MINS'                          { $1 * 60 }
             | int 'HOURS'                         { $1 * 60 * 60 } 
             | int 'DAYS'                          { $1 * 60 * 60 * 24 }
+
+Eexpr : 'EVERY' Interval                          { EVEvery $2 }
+      | 'EVERY' Interval 'STARTING AT' absTime    { EVStartingAt $2 $4 }
+      | Interval 'AFTER' Eexpr                    { EVAfter $1 $3 }
+      | 'INTERRUPT' extern                        { EVInterrupt (Extern $2) }
+      | Eexpr 'WITH COOLDOWN' Interval            { EVCooldown $1 $3 }
+      | 'AFTER' Vexpr 'BEGINS' 'CHECKING EVERY' Interval
+                                                  { EVBegins $2 $5 }
+      | 'AFTER' Vexpr 'ENDS' 'CHECKING EVERY' Interval
+                                                  { EVEnds $2 $5 }
+      | '(' Eexpr ')'                             { $2 }
+
+
+Rule : 'ON' '(' Eexpr ')' Block                   { Rule $3 $5 }
+
+Program : Vassign Program                         { addValAssign $2 $1 }
+        | Aassign Program                         { addActAssign $2 $1 }
+        | Rule Program                            { addRule $2 $1 }
+        | {- empty -}                             { Program [] [] [] }
 
 {
 
@@ -182,7 +216,19 @@ newtype Extern = Extern String
 
 data AAssign = AAssign ID [AExpr]
              deriving (Show,Read,Eq,Ord)
+
+data Rule = Rule EExpr [AExpr]
+          deriving (Show,Read,Eq,Ord)
              
+data EExpr = EVEvery Interval
+           | EVStartingAt Interval LocalTime
+           | EVAfter Interval EExpr
+           | EVInterrupt Extern
+           | EVCooldown EExpr Interval
+           | EVBegins VExpr Interval
+           | EVEnds VExpr Interval
+           deriving (Show,Read,Eq,Ord)
+
 data AExpr = AEGather [Record] String 
            | AESend Email VExpr
            | AEExec VExpr
@@ -226,22 +272,24 @@ data UnOp = Logical_Not
 newtype Interval = Interval Int -- Units are seconds 
                  deriving (Show,Read,Eq,Ord)
 
-{-
 -- The AST type
 data Program = Program {
-  assigned :: [Assignment],
+  actAssign :: [AAssign],
+  valAssign :: [AExpr],
   rules :: [Rule]
 } deriving (Show,Read,Eq,Ord)
 
-addAssign :: Program -> Assignment -> Program 
-addAssign p a =  p{assigned=na}
-  where na = a : assigned p
+addActAssign :: Program -> AAssign -> Program 
+addActAssign p a =  p{actAssign=na}
+  where na = [a] ++ actAssign p
+
+addValAssign :: Program -> AExpr -> Program 
+addValAssign p a =  p{valAssign=na}
+  where na = [a] ++ valAssign p
 
 addRule :: Program -> Rule -> Program 
 addRule p r =  p{rules=nr}
-  where nr = r : rules p
-
--}
+  where nr = [r] ++ rules p
 
 parseError :: [L.Token] -> a
 parseError = error . ("Parse error on token : " ++) . ppShow

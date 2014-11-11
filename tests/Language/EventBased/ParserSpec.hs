@@ -4,11 +4,25 @@ module Language.EventBased.ParserSpec (spec) where
 
 import SpecHelper
 import Data.String.Here (here,i)
+
 import Language.EventBased.Parser
 import Language.EventBased.Lexer (tokenize)
+
 import Control.Exception (evaluate)
 import Control.DeepSeq (force)
 
+import Data.Time (ParseTime)
+import Data.Time.Calendar (fromGregorian)
+import Data.Time.Clock (DiffTime,secondsToDiffTime)
+import Data.Time.Format (parseTimeOrError,defaultTimeLocale)
+import Data.Time.LocalTime (LocalTime(..),TimeOfDay(..))
+
+
+
+-- Helper Funtions to assemble time literals 
+
+makeDateTime mm dd yy h m s = (LocalTime (fromGregorian yy mm dd)
+                                                       (TimeOfDay h m s))
 -- General utility functions
 
 parseTest p s e = it ("parsing " ++ (show s)) $ do 
@@ -49,6 +63,18 @@ actError = parseError actExpr
 actTests = runTests (uncurry actTest)
 
 actErrors = runTests actError
+
+--- Setup Testing for Event Expressions 
+
+evtExpr = evtParse . tokenize
+
+evtTest = parseTest evtExpr 
+
+evtError = parseError evtExpr
+
+evtTests = runTests (uncurry evtTest)
+
+evtErrors = runTests evtError
 
 -- Simple Static Tests for Literal Values 
 
@@ -203,6 +229,21 @@ actAssignPairs = [
   ("foo := bar + 1;", AEVassign (ID "foo") (VEBinop Add (VEId "bar") (VEInt 1)))
   ]
 
+-- Event action tests 
+
+evtEveryPairs = [
+  ("EVERY 5 mins", EVEvery (Interval 300)),
+  ("EVERY 10m 12s STARTING AT  12/31/2048 21:53:00",
+        EVStartingAt (Interval 612) (makeDateTime 12 31 2048 21 53 0))]
+
+evtAfterPairs = [
+  ("3m AFTER EVERY 10m", EVAfter (Interval 180) (EVEvery (Interval 600)))]
+  
+evtInterruptPairs = [
+  ("INTERRUPT Movement_Seen",EVInterrupt (Extern "Movement_Seen"))]
+
+--  
+
 spec :: Spec
 spec =  do
   describe "Value Expressions" $ do
@@ -251,5 +292,16 @@ spec =  do
     context "Action Blocks" $ do 
       it "Test a number of blocks" $
         pendingWith "TODO: Need to learn QuickCheck to do this properly"
-
-
+  describe "Event Expressions" $ do 
+    context "EVERY clauses" $ do 
+      evtTests evtEveryPairs
+    context "AFTER clauses" $ do 
+      evtTests evtAfterPairs
+    context "INTERRUPT clauses" $ do 
+      evtTests evtInterruptPairs
+    context "WITH COOLDOWN clases" $ do 
+      it "write tests" $ do 
+        pendingWith "write the tests" 
+    context "AFTER BEGINS/ENDS clases" $ do 
+      it "write tests" $ do 
+        pendingWith "write the tests" 

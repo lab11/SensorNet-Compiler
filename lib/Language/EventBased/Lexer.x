@@ -65,7 +65,7 @@ tokens :-
   "EVERY"                     { \s -> (Key Every) }
   "AFTER"                     { \s -> (Key After) }
   "BEGINS"                    { \s -> (Key Begins) }
-  "END"                       { \s -> (Key End) }
+  "ENDS"                      { \s -> (Key Ends) }
   "PERFORM"                   { \s -> (Key Perform) } 
   "WITH" $white+ "COOLDOWN"   { \s -> (Key With_Cooldown) }
   "WITHIN"                    { \s -> (Key Within) }
@@ -80,6 +80,7 @@ tokens :-
   "INTO"                      { \s -> (Key Into) }
   "AS"                        { \s -> (Key As) }
   "SET" $white+ "OPTIONS"     { \s -> (Key Set_Options) }
+  "CHECKING" $white+ "EVERY"  { \s -> (Key Checking_Every) }
   "STARTING" $white+ "AT"     { \s -> (Key Starting_At) }
   "UPDATE"                    { \s -> (Key Update) } 
 
@@ -109,7 +110,7 @@ tokens :-
   "||"                        { \s -> (Op Logical_Or) }
   "^"                         { \s -> (Op Logical_Xor) }
   "!"                         { \s -> (Op Logical_Not) }
-  "=="                         { \s -> (Op Structural_Equality) }
+  "=="                        { \s -> (Op Structural_Equality) }
   ">"                         { \s -> (Op Greater_Than) }
   ">="                        { \s -> (Op Greater_Than_Equals) }
   "<"                         { \s -> (Op Less_Than) }
@@ -186,7 +187,7 @@ data Keyword = On
         	   | Every 
         	   | After
         	   | Begins
-        	   | End
+        	   | Ends
         	   | Perform
         	   | With_Cooldown
         	   | Within
@@ -201,6 +202,7 @@ data Keyword = On
         	   | As
         	   | Set_Options
              | Starting_At
+             | Checking_Every
              | Update
              | Interrupt
         	   deriving(Eq,Show,Read)
