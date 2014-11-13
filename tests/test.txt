@@ -1,0 +1,20 @@
+ON( EVERY 5 mins ) {
+    GATHER {
+        SAVE Node_id() AS nodeid
+    } INTO Tbl; 
+    SEND foo@bar.com "message";
+    EXECUTE Led_on();
+    thing := 0;
+    DO some_other_thing;
+    IF( thing ) {
+
+    };
+}
+
+ON( EVERY 1 day ){
+
+} 
+
+ON ( 5 mins AFTER ( AFTER ( Flow_rate() > 90 ) BEGINS CHECKING EVERY 1 min )) {
+    EXECUTE Gather_sample(); 
+}
