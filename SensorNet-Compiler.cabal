@@ -18,7 +18,8 @@ library
   hs-source-dirs:    lib
   default-language:  Haskell2010
   exposed-modules:   Language.EventBased.Lexer,
-                     Language.EventBased.Parser
+                     Language.EventBased.Parser,
+                     Language.IR
   build-depends:     base >= 4.6,
                      array,
                      pretty-show,
