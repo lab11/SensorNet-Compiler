@@ -11,8 +11,10 @@ Install
 -------
 
       Make sure ~/.cabal/bin is early in your path, then: 
-      
+     
+      $ cabal update
       $ cabal install happy
+      $ cabal install alex
       $ cabal sandbox init
       $ cabal install --enable-tests
       $ cabal configure --enable-tests

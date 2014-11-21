@@ -21,8 +21,6 @@ library
                      Language.EventBased.Parser,
                      Language.IR
   build-depends:     base >= 4.6,
-                     alex,
-                     happy,
                      array,
                      pretty-show,
                      containers,
