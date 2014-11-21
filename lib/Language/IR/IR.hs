@@ -1,5 +1,4 @@
-module Language.IR.IR (
-) where
+module Language.IR.IR where
 
 import Data.Map (Map) 
 import qualified Data.Map as Map
@@ -70,6 +69,7 @@ data Event = Boot                 -- Default system events (i.e not invoked by
 
 data WaitType = Waiting
               | Not_Waiting
+              deriving (Show,Read,Eq,Ord)
 
 -- Actions that we can take.
 data Action = SimultAt WaitType Time [BlockID]
