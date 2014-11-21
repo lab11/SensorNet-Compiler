@@ -8,4 +8,6 @@ import qualified Data.Map as Map
 import Language.EventBased.Parser (Interval,Email,BinOp,UnOp)
 import Data.Time.LocalTime (LocalTime)
 
+-- fromEventBased :: P.Program -> Program 
+
 

@@ -28,33 +28,45 @@ import Data.Time.LocalTime (LocalTime)
  -}
 
 newtype BlockID = BlockID String  -- Type Safe Block Identifier
+                deriving (Show,Read,Eq,Ord)
 newtype EventID = EventID String  -- Type Safe Event Identifier
+                deriving (Show,Read,Eq,Ord)
 
 newtype TableID = TableID String  -- Type Safe Table Identifier
+                deriving (Show,Read,Eq,Ord)
 newtype FieldID = FieldID String  -- Type Safe Field Identifier
+                deriving (Show,Read,Eq,Ord)
 
 newtype RegID = RegID String      -- Local Register Identifier
+              deriving (Show,Read,Eq,Ord)
 newtype VarID = VarID String      -- Global Variable Identifier
+              deriving (Show,Read,Eq,Ord)
 
 data Literal = Str String         -- Literal Values
              | Flt Float
              | Int Int 
              | Bool Bool 
+             deriving (Show,Read,Eq,Ord)
 
 data StoReg = Register RegID      -- Registers we can store into, null just 
             | Null                --  discards the value.
+            deriving (Show,Read,Eq,Ord)
 
 data Value = Reg RegID            -- Values we can use as parameters
            | Lit Literal          --    instructions
            | Var VarID
+           deriving (Show,Read,Eq,Ord)
 
 newtype ExternCall = ExternCall String  -- TypeSafe External Call Identifier 
+                   deriving (Show,Read,Eq,Ord)
 
 data Time = Rel Interval 
           | Now
+          deriving (Show,Read,Eq,Ord)
 
 data Event = Boot                 -- Default system events (i.e not invoked by
            | Interrupt String     --    other blocks)
+           deriving (Show,Read,Eq,Ord)
 
 -- Actions that we can take.
 data Action = SimultAt Time [BlockID]
@@ -66,6 +78,7 @@ data Action = SimultAt Time [BlockID]
             | If Value (Maybe BlockID) (Maybe BlockID)
             | BinaryOp StoReg BinOp Value Value
             | UnaryOp StoReg UnOp Value
+            deriving (Show,Read,Eq,Ord)
          
 type Block = [Action]
 
@@ -74,7 +87,7 @@ data Program = Program {
   events :: Map Event EventID,
   rules :: Map EventID [BlockID], 
   blocks :: Map BlockID Block
-} 
+} deriving (Show,Read,Eq)
 
 {-
  
@@ -93,4 +106,8 @@ data Program = Program {
 
  TODO : Write a "Program -> Bool" validity check function that makes sure 
         none of the above conditions are broken.
+
+ TODO : Make sure we can Print the a Programin some human readable way
+
+
  -} 
