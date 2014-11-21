@@ -10,7 +10,7 @@ repositories, and make sure cabal is at least version 1.18.
 Install
 -------
 
-      Make sure ~/.cabal/bin is in your path, then: 
+      Make sure ~/.cabal/bin is early in your path, then: 
       
       $ cabal install happy
       $ cabal sandbox init
