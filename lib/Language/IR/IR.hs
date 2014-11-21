@@ -99,8 +99,6 @@ data Program = Program {
  - No RegID may be repeated in a block 
  - No RegID may be used before it is defined in a block 
  - No RegID may be assigned more than once, unless it is 
- - Simult will run all the blocks and only continue its own 
-   execution when that's done.
  - Simult and If must have at least one block to execute
  - Never use the String_Concat binop 
  - All values must be initialized before they are used.
