@@ -68,8 +68,11 @@ data Event = Boot                 -- Default system events (i.e not invoked by
            | Interrupt String     --    other blocks)
            deriving (Show,Read,Eq,Ord)
 
+data WaitType = Waiting
+              | Not_Waiting
+
 -- Actions that we can take.
-data Action = SimultAt Time [BlockID]
+data Action = SimultAt WaitType Time [BlockID]
             | Store VarID Value
             | Send Email Value
             | Gather TableID [(FieldID,Value)] 
