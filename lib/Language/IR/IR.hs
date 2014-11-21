@@ -3,7 +3,6 @@ module Language.IR.IR (
 
 import Data.Map (Map) 
 import qualified Data.Map as Map
-import qualified Language.EventBased.Parser as P 
 import Language.EventBased.Parser (Interval,Email,BinOp,UnOp)
 import Data.Time.LocalTime (LocalTime)
 
@@ -13,9 +12,12 @@ import Data.Time.LocalTime (LocalTime)
  -    - Simplicity for conversion to C
  -    - Simplicity for analyses
  -      - Type Checking / Inference 
+ -        - TODO : Get the Language.C libraries working so we can get type
+ -                 info from header files.
  -      - Power Consumption Estimate 
  -      - Memory Use Bounds 
- -      - Infinite Loop Prevention. 
+ -      - Infinite Loop Prevention unless timer spaced
+ -      - Find upper bound on number of timers/sems needed 
  -    - Flatten Structure 
  -    - Preserve Semantics 
  -      - incl. async gather acts. 
@@ -26,52 +28,71 @@ import Data.Time.LocalTime (LocalTime)
  -    - Support future additions to the language with minimal changes 
  -}
 
-newtype BlockID = BlockID String
-newtype EventID = EventID String 
+newtype BlockID = BlockID String  -- Type Safe Block Identifier
+newtype EventID = EventID String  -- Type Safe Event Identifier
 
-newtype TableID = TableID String
-newtype FieldID = FieldID String 
+newtype TableID = TableID String  -- Type Safe Table Identifier
+newtype FieldID = FieldID String  -- Type Safe Field Identifier
 
-newtype RegID = RegID String 
-newtype VarID = VarID String 
+newtype RegID = RegID String      -- Local Register Identifier
+newtype VarID = VarID String      -- Global Variable Identifier
 
-data Literal = Str String
+data Literal = Str String         -- Literal Values
              | Flt Float
              | Int Int 
              | Bool Bool 
 
-data Value = Reg RegID 
-           | Lit Literal
+data StoReg = Register RegID      -- Registers we can store into, null just 
+            | Null                --  discards the value.
+
+data Value = Reg RegID            -- Values we can use as parameters
+           | Lit Literal          --    instructions
            | Var VarID
 
+newtype ExternCall = ExternCall String  -- TypeSafe External Call Identifier 
 
-newtype ExternCall = ExternCall String
+data Time = Abs LocalTime         -- Main Timing Identifiers (
+          | Rel Interval 
+          | Now
 
-data Program = Program {
-  tables :: Map TableID [FieldID],
-  rules :: Map EventID [BlockID], 
-  blocks :: Map BlockID [Action]
-} 
+data Event = Boot                 -- Default system events (i.e not invoked by
+           | Interrupt String     --    other blocks)
 
-data Event = Boot 
-           | Interrupt String
-          
-data Action = Simult [BlockID] 
+-- Actions that we can take.
+data Action = SimultAt Time [BlockID]
             | Store VarID Value
             | Send Email Value
             | Gather TableID [(FieldID,Value)] 
             | Call RegID ExternCall [Value]
             | Concat RegID [Value] 
-            | If RegID (Maybe BlockID) (Maybe BlockID)
+            | If Value (Maybe BlockID) (Maybe BlockID)
             | BinaryOp RegID BinOp Value Value
             | UnaryOp RegID UnOp Value
-            | WaitThen Interval BlockID
-            | WaitUntil LocalTime BlockID
          
-{- There's a number of invariants that we need to preserve 
- - - No RegID may be repeated in a block 
- - - No RegID may be used before it is defined in a block 
- - - No RegID may be assigned more than once 
- - - Simult will run all the blocks and only continue its own 
- -   execution when that's done. 
- - -} 
+type Block = [Action]
+
+data Program = Program {
+  tables :: Map TableID [FieldID],
+  events :: Map Event EventID,
+  rules :: Map EventID [BlockID], 
+  blocks :: Map BlockID Block
+} 
+
+{-
+ 
+ There's a number of invariants that we need to preserve
+  
+ - No RegID may be repeated in a block 
+ - No RegID may be used before it is defined in a block 
+ - No RegID may be assigned more than once, unless it is 
+ - Simult will run all the blocks and only continue its own 
+   execution when that's done.
+ - Simult and If must have at least one block to execute
+ - No 
+ - All values must be initialized before they are used.
+ - Optional: Register names musn't be repeated across the whole program.
+ - Optional: Don't do anything that would require constant propagation
+
+ TODO : Write a "Program -> Bool" validity check function that makes sure 
+        none of the above conditions are broken.
+ -} 
