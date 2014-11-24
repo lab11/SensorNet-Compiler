@@ -12,7 +12,7 @@ import Data.Time.LocalTime (LocalTime)
 import Control.Monad.State
 import Control.Lens
 
--- Types for the Transform -- 
+-- Utility Types -- 
 
 data ID = Block String
         | Table String 
@@ -21,6 +21,8 @@ data ID = Block String
         | Reg String
         | Var String 
         deriving (Show,Read,Eq,Ord)
+
+-- Types for the Transformer Monad --
 
 data TransformState = TransformState { 
   _ast :: P.Program,
@@ -31,18 +33,42 @@ data TransformState = TransformState {
 
 makeLenses ''TransformState
 
-type Transformer a = State TransformState a
-{-
-data BlockState = BlockState {
-  _currentBlock :: 
+type Transformer = State TransformState
 
+-- Functions for the Transformer Monad --
+
+initTransformState :: P.Program -> TransformState
+initTransformState s = TransformState s emptyProg Map.empty 0
+
+-- Types for the BlockTransformer Monad --
+
+data BlockState = BlockState {
+  _currentBlock :: Block
+}
+
+makeLenses ''BlockState
+
+type BlockTransformer = StateT BlockState Transformer
+
+-- Functions for the BlockTransformer Monad --
+
+initBlockState :: Block -> BlockState 
+initBlockState b = BlockState b 
+
+-- Converter Functions --
+
+fromEventBased :: P.Program -> Program 
+fromEventBased p = (execState convert $ initTransformState p) ^. ir
+
+-- Converter Monads --
+
+convert :: Transformer () 
+convert = error "unimplemented"
+
+{-
 -- Constructs the inital state for the transformation from an AST
-initState :: P.Program -> TransformState
-initState s = TransformState s emptyProg Map.empty 0
 
 -- The one this this module exports the converter function
-fromEventBased :: P.Program -> Program 
-fromEventBased p = ir $ execState transform $ initState p
   
 -- Given a transformer loaded with the correct state this will
 --   completely assemble the IR representation  
@@ -74,5 +100,4 @@ convertValAssigns = error "unimplemented"
 
 convertRules :: Transformer ()
 convertRules = error "unimplemented" 
-
 -}
