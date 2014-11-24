@@ -1,4 +1,5 @@
-{ 
+{
+{-# LANGUAGE TemplateHaskell #-}
 module Language.EventBased.Parser 
 (
   VExpr(..),
@@ -12,12 +13,22 @@ module Language.EventBased.Parser
   Extern(..),
   ID(..),
   Rule(..),
+  AAssign(..),
   Program(..),
+  rules,
+  valAssign,
+  actAssign,
   progParse,
   valParse,
   actParse,
   evtParse,
   intParse,
+  addActAssign,
+  liftActAssign,
+  addValAssign, 
+  liftValAssign, 
+  addRule,
+  liftRule
 ) where
 
 import Text.Show.Pretty
@@ -26,6 +37,7 @@ import Data.Time (ParseTime)
 import Data.Time.Clock (DiffTime,secondsToDiffTime)
 import Data.Time.Format (parseTimeOrError,defaultTimeLocale)
 import Data.Time.LocalTime (LocalTime,TimeOfDay)
+import Control.Lens
 
 }
 
@@ -274,25 +286,66 @@ newtype Interval = Interval Int -- Units are seconds
 
 -- The AST type
 data Program = Program {
-  actAssign :: [AAssign],
-  valAssign :: [AExpr],
-  rules :: [Rule]
+  _actAssign :: [AAssign],
+  _valAssign :: [AExpr],
+  _rules :: [Rule]
 } deriving (Show,Read,Eq,Ord)
 
+-- ActAssignment Lenses and Utility Function
+
 addActAssign :: Program -> AAssign -> Program 
-addActAssign p a =  p{actAssign=na}
-  where na = [a] ++ actAssign p
+addActAssign p a = liftActAssign ([a] ++) p 
+
+liftActAssign :: ([AAssign] -> [AAssign]) -> Program -> Program 
+liftActAssign = over actAssign
+
+actAssign :: Lens Program Program [AAssign] [AAssign]
+actAssign = lens getActAssign setActAssign
+
+getActAssign :: Program -> [AAssign]
+getActAssign = _actAssign
+
+setActAssign :: Program -> [AAssign] -> Program 
+setActAssign (Program _ v r) na = Program na v r 
+
+-- ValAssignment Lenses and Utility Function
 
 addValAssign :: Program -> AExpr -> Program 
-addValAssign p a =  p{valAssign=na}
-  where na = [a] ++ valAssign p
+addValAssign p v = liftValAssign ([v] ++) p 
+
+liftValAssign :: ([AExpr] -> [AExpr]) -> Program -> Program 
+liftValAssign = over valAssign
+
+valAssign :: Lens Program Program [AExpr] [AExpr]
+valAssign = lens getValAssign setValAssign
+
+getValAssign :: Program -> [AExpr]
+getValAssign = _valAssign
+
+setValAssign :: Program -> [AExpr] -> Program 
+setValAssign (Program a _ r) nv = Program a nv r 
+
+-- Rule Lenses and Utility Function
 
 addRule :: Program -> Rule -> Program 
-addRule p r =  p{rules=nr}
-  where nr = [r] ++ rules p
+addRule p r = liftRule ([r] ++) p 
+
+liftRule :: ([Rule] -> [Rule]) -> Program -> Program
+liftRule = over rules
+
+rules :: Lens Program Program [Rule] [Rule]
+rules = lens getRules setRules
+
+getRules :: Program -> [Rule]
+getRules = _rules
+
+setRules :: Program -> [Rule] -> Program 
+setRules (Program a v _) nr = Program a v nr 
+
+
+-- Error Handling  
 
 parseError :: [L.Token] -> a
 parseError = error . ("Parse error on token : " ++) . ppShow
-
 
 }
