@@ -171,7 +171,29 @@ convertAEIf v bt bf =
      addInstruction $ If vr (Just btID) (Just bfID)
 
 convertVExpr :: P.VExpr -> BlockTransformer Value
-convertVExpr v = error "Unimplemented" 
+convertVExpr (P.VEBinop P.String_Append v1 v2) = convertConcat v1 v2 
+convertVExpr (P.VEBinop b v1 v2) = convertBinOp b v1 v2
+convertVExpr (P.VEUnop u v) = convertUnOp u v 
+convertVExpr (P.VECall fn p) = convertCall fn p 
+convertVExpr (P.VEStr s) = return $ Lit (Str s)
+convertVExpr (P.VEInt i) = return $ Lit (Int i)
+convertVExpr (P.VEFlt f) = return $ Lit (Flt f) 
+convertVExpr (P.VEBool b) = return $ Lit (Bool b) 
+convertVExpr (P.VEId i) = return $ Var (VarID i)
+
+convertConcat :: P.VExpr -> P.VExpr -> BlockTransformer Value 
+convertConcat v1 v2 = error "Unimplemented"
+
+convertBinOp :: P.BinOp -> P.VExpr -> P.VExpr -> BlockTransformer Value 
+convertBinOp b v1 v2 = error "Unimplemented"
+
+convertUnOp :: P.UnOp -> P.VExpr -> BlockTransformer Value
+convertUnOp u v = error "Unimplemented"
+
+convertCall :: String -> [P.VExpr] -> BlockTransformer Value
+convertCall fn p = error "Unimplemented"
+
+
 
 convertValAssigns :: Transformer ()
 convertValAssigns = error "Unimplemented" 
