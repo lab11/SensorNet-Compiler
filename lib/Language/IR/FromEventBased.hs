@@ -20,7 +20,7 @@ data ID = Block String
         | Table String 
         | Event String
         | Field String 
-        | Register String
+        | Rgstr String
         | Variable String 
         deriving (Show,Read,Eq,Ord)
 
@@ -65,9 +65,10 @@ initBlockState b = BlockState b
 getNextCounterB :: BlockTransformer Int 
 getNextCounterB = lift getNextCounter
 
-getNextRegNameB :: BlockTransformer String
-getNextRegNameB = do c <- getNextCounterB
-                     return $ "reg_" ++ (show c) 
+getNextReg :: BlockTransformer RegID
+getNextReg = do c <- getNextCounterB
+                return $ RegID ("reg_" ++ (show c))
+
 
 addInstruction :: Instruction -> BlockTransformer () 
 addInstruction i = workingBlock %= (++ [i]) 
@@ -175,25 +176,51 @@ convertVExpr (P.VEBinop P.String_Append v1 v2) = convertConcat v1 v2
 convertVExpr (P.VEBinop b v1 v2) = convertBinOp b v1 v2
 convertVExpr (P.VEUnop u v) = convertUnOp u v 
 convertVExpr (P.VECall fn p) = convertCall fn p 
-convertVExpr (P.VEStr s) = return $ Lit (Str s)
-convertVExpr (P.VEInt i) = return $ Lit (Int i)
-convertVExpr (P.VEFlt f) = return $ Lit (Flt f) 
+convertVExpr (P.VEStr s)  = return $ Lit (Str s)
+convertVExpr (P.VEInt i)  = return $ Lit (Int i)
+convertVExpr (P.VEFlt f)  = return $ Lit (Flt f) 
 convertVExpr (P.VEBool b) = return $ Lit (Bool b) 
-convertVExpr (P.VEId i) = return $ Var (VarID i)
+convertVExpr (P.VEId i)   = return $ Var (VarID i)
 
 convertConcat :: P.VExpr -> P.VExpr -> BlockTransformer Value 
-convertConcat v1 v2 = error "Unimplemented"
+convertConcat v1 v2 =
+  do val1 <- convertVExpr v1 
+     val2 <- aggregateConcat v2 
+     ro <- getNextReg 
+     addInstruction $ Concat (Register ro) ([val1] ++ val2) 
+     return (Reg ro)
+
+aggregateConcat :: P.VExpr -> BlockTransformer [Value] 
+aggregateConcat (P.VEBinop P.String_Append v1 v2) = 
+  do val1 <- convertVExpr v1 
+     val2 <- aggregateConcat v2 
+     return $ [val1] ++ val2 
+
+aggregateConcat v = 
+  do val <- convertVExpr v
+     return [val] 
 
 convertBinOp :: P.BinOp -> P.VExpr -> P.VExpr -> BlockTransformer Value 
-convertBinOp b v1 v2 = error "Unimplemented"
+convertBinOp b v1 v2 =
+  do val1 <- convertVExpr v1 
+     val2 <- convertVExpr v2 
+     ro <- getNextReg
+     addInstruction $ BinaryOp (Register ro) b val1 val2
+     return (Reg ro)
 
 convertUnOp :: P.UnOp -> P.VExpr -> BlockTransformer Value
-convertUnOp u v = error "Unimplemented"
+convertUnOp u v = 
+  do val <- convertVExpr v
+     ro <- getNextReg 
+     addInstruction $ UnaryOp (Register ro) u val
+     return (Reg ro) 
 
 convertCall :: String -> [P.VExpr] -> BlockTransformer Value
-convertCall fn p = error "Unimplemented"
-
-
+convertCall fn p = 
+  do vals <- mapM convertVExpr p 
+     ro <- getNextReg 
+     addInstruction $ Call (Register ro) (ExternCall fn) vals 
+     return (Reg ro) 
 
 convertValAssigns :: Transformer ()
 convertValAssigns = error "Unimplemented" 

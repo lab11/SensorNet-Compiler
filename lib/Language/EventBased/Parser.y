@@ -342,7 +342,6 @@ getRules = _rules
 setRules :: Program -> [Rule] -> Program 
 setRules (Program a v _) nr = Program a v nr 
 
-
 -- Error Handling  
 
 parseError :: [L.Token] -> a
