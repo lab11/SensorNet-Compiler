@@ -24,8 +24,8 @@ library
                      array,
                      pretty-show,
                      containers,
-                     mtl,
-                     lens,
+                     mtl >= 2.2.1,
+                     lens >= 4.6,
                      time >= 1.5
   build-tools:       alex, 
                      happy
