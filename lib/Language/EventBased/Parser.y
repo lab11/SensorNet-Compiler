@@ -1,5 +1,6 @@
 {
 {-# LANGUAGE TemplateHaskell #-}
+
 module Language.EventBased.Parser 
 (
   VExpr(..),
