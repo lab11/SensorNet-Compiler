@@ -96,9 +96,34 @@ convertBlock s b = do let initState = initBlockState []
                       ir . blocks %= Map.insert (BlockID id) newBlock 
                       return $ Block id
 
-
 convertAExpr :: P.AExpr -> BlockTransformer ()
-convertAExpr = error "Unimplemented" 
+convertAExpr (P.AEGather r s)  = convertAEGather r s 
+convertAExpr (P.AESend e v)    = convertAESend e v 
+convertAExpr (P.AEExec v)      = convertAEExec v
+convertAExpr (P.AEIf v bt bf)  = convertAEIf v bt bf
+convertAExpr (P.AEDo s)        = convertAEDo s
+convertAExpr (P.AEVassign s v) = convertAEVassign s v
+
+convertAEGather :: [P.Record] -> String -> BlockTransformer ()
+convertAEGather = error "unimplemented"
+
+convertAESend :: P.Email -> P.VExpr -> BlockTransformer ()
+convertAESend e v = error "Unimplemented"
+
+convertAEExec :: P.VExpr -> BlockTransformer ()
+convertAEExec v = error "Unimplemented"
+
+convertAEDo :: P.ID -> BlockTransformer ()
+convertAEDo (P.ID id) = error "Unimplemented"
+
+convertAEVassign :: P.ID -> P.VExpr -> BlockTransformer ()
+convertAEVassign (P.ID id) v = error "Unimplemented"
+
+convertAEIf :: P.VExpr -> [P.AExpr] -> [P.AExpr] -> BlockTransformer ()
+convertAEIf v bt bf = error "Unimplemented"
+
+convertVExpr :: P.VExpr -> BlockTransformer RegID 
+convertVExpr v = error "Unimplemented" 
 
 convertValAssigns :: Transformer ()
 convertValAssigns = error "Unimplemented" 
