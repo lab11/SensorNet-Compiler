@@ -1,9 +1,12 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Language.IR.IR where
 
 import Data.Map (Map) 
 import qualified Data.Map as Map
 import Language.EventBased.Parser (Interval,Email,BinOp,UnOp)
 import Data.Time.LocalTime (LocalTime)
+import Control.Lens
 
 {-
  - Goal of IR design 
@@ -71,26 +74,30 @@ data WaitType = Waiting
               | Not_Waiting
               deriving (Show,Read,Eq,Ord)
 
--- Actions that we can take.
-data Action = SimultAt WaitType Time [BlockID]
-            | Store VarID Value
-            | Send Email Value
-            | Gather TableID [(FieldID,Value)] 
-            | Call StoReg ExternCall [Value]
-            | Concat StoReg [Value] 
-            | If Value (Maybe BlockID) (Maybe BlockID)
-            | BinaryOp StoReg BinOp Value Value
-            | UnaryOp StoReg UnOp Value
-            deriving (Show,Read,Eq,Ord)
+-- Instructions that we can take.
+data Instruction = SimultAt WaitType Time [BlockID]
+                 | Store VarID Value
+                 | Send Email Value
+                 | Gather TableID [(FieldID,Value)] 
+                 | Call StoReg ExternCall [Value]
+                 | Concat StoReg [Value] 
+                 | If Value (Maybe BlockID) (Maybe BlockID)
+                 | BinaryOp StoReg BinOp Value Value
+                 | UnaryOp StoReg UnOp Value
+                 deriving (Show,Read,Eq,Ord)
          
-type Block = [Action]
+type Block = [Instruction]
 
 data Program = Program {
-  tables :: Map TableID [FieldID],
-  events :: Map Event EventID,
-  rules :: Map EventID [BlockID], 
-  blocks :: Map BlockID Block
+  _tables :: Map TableID [FieldID],
+  _events :: Map Event EventID,
+  _rules :: Map EventID [BlockID], 
+  _blocks :: Map BlockID Block
 } deriving (Show,Read,Eq)
+
+emptyProg = Program Map.empty Map.empty Map.empty Map.empty 
+
+makeLenses ''Program
 
 {-
  
