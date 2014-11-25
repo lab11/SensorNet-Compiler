@@ -1,3 +1,9 @@
+some_other_thing := {
+    a := b + c; 
+    c := a - c ;
+    b := ! False;
+}
+
 ON( EVERY 5 mins ) {
     GATHER {
         SAVE Node_id() AS nodeid
@@ -7,12 +13,16 @@ ON( EVERY 5 mins ) {
     thing := 0;
     DO some_other_thing;
     IF( thing ) {
-
+        bar := false; 
     };
 }
 
 ON( EVERY 1 day ){
-
+    fizz := fizz + 15;
+    IF(fizz >= 123){
+        DO some_other_thing;
+        bar := Foo(a,b + c,"123" << 42 << "this is a string" << baz);
+    };
 } 
 
 ON ( 5 mins AFTER ( AFTER ( Flow_rate() > 90 ) BEGINS CHECKING EVERY 1 min )) {

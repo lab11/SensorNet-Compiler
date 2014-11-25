@@ -259,7 +259,6 @@ data VExpr = VEBinop BinOp VExpr VExpr
            | VEInt Int
            | VEFlt Float
            | VEBool Bool
-           | VEEmail String
            | VEId String
            | VECall String [VExpr]
            deriving (Show,Read,Eq,Ord)
@@ -342,7 +341,6 @@ getRules = _rules
 
 setRules :: Program -> [Rule] -> Program 
 setRules (Program a v _) nr = Program a v nr 
-
 
 -- Error Handling  
 

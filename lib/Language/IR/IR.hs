@@ -62,8 +62,9 @@ data Value = Reg RegID            -- Values we can use as parameters
 newtype ExternCall = ExternCall String  -- TypeSafe External Call Identifier 
                    deriving (Show,Read,Eq,Ord)
 
-data Time = Rel Interval 
-          | Now
+data Time = Rel Interval
+          | Abs LocalTime
+          | Now             
           deriving (Show,Read,Eq,Ord)
 
 data Event = Boot                 -- Default system events (i.e not invoked by
@@ -74,7 +75,7 @@ data WaitType = Waiting
               | Not_Waiting
               deriving (Show,Read,Eq,Ord)
 
--- Instructions that we can take.
+-- Instructions that we can take
 data Instruction = SimultAt WaitType Time [BlockID]
                  | Store VarID Value
                  | Send Email Value
