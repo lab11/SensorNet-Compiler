@@ -197,8 +197,6 @@ convertAEIf v bt bf =
      bfID <- doWithinB $ convertBlock bfName bf 
      addInstruction $ If vr (Just btID) (Just bfID)
 
-
-
 convertVExpr :: P.VExpr -> BlockTransformer Value
 convertVExpr (P.VEBinop P.String_Append v1 v2) = convertConcat v1 v2 
 convertVExpr (P.VEBinop b v1 v2) = convertBinOp b v1 v2
@@ -212,17 +210,17 @@ convertVExpr (P.VEId i)   = return $ Var (VarID i)
 
 convertConcat :: P.VExpr -> P.VExpr -> BlockTransformer Value 
 convertConcat v1 v2 =
-  do val1 <- convertVExpr v1 
+  do val1 <- aggregateConcat v1 
      val2 <- aggregateConcat v2 
      ro <- getNextRegB 
-     addInstruction $ Concat (Register ro) ([val1] ++ val2) 
+     addInstruction $ Concat (Register ro) (val1 ++ val2) 
      return (Reg ro)
 
 aggregateConcat :: P.VExpr -> BlockTransformer [Value] 
 aggregateConcat (P.VEBinop P.String_Append v1 v2) = 
-  do val1 <- convertVExpr v1 
+  do val1 <- aggregateConcat v1 
      val2 <- aggregateConcat v2 
-     return $ [val1] ++ val2 
+     return $ val1 ++ val2 
 
 aggregateConcat v = 
   do val <- convertVExpr v
@@ -308,7 +306,8 @@ convertPeriodic slug i s b =
      let bsn = "rule_" ++ (show n) ++ "_" ++  slug
      let bsb = [SimultAt Waiting Now [b]]
      bID <- addBlock bsn bsb
-     ir.blocks %= Map.insertWith (++) bID [SimultAt Not_Waiting (Rel i) [bID]]
+     ir.blocks %= Map.insertWith (flip (++)) bID [SimultAt Not_Waiting (Rel i) 
+                                                                     [bID]]
      return bID 
 
 convertAfter :: Interval -> P.EExpr -> BlockID -> Transformer ()
@@ -368,7 +367,7 @@ convertBegins v i b =
      (bgID,bgVal) <- convertVExprToBlock bName v 
      ru <- getNextReg
      rc <- getNextReg
-     ir.blocks %= Map.insertWith (++) bgID [UnaryOp (Register ru)
+     ir.blocks %= Map.insertWith (flip (++)) bgID [UnaryOp (Register ru)
                                                     Logical_Not
                                                     (Var (VarID vName)),
                                             BinaryOp (Register rc) 
