@@ -62,8 +62,9 @@ data Value = Reg RegID            -- Values we can use as parameters
 newtype ExternCall = ExternCall String  -- TypeSafe External Call Identifier 
                    deriving (Show,Read,Eq,Ord)
 
-data Time = Rel Interval 
-          | Now
+data Time = Rel Interval
+          | Abs LocalTime
+          | Now             
           deriving (Show,Read,Eq,Ord)
 
 data Event = Boot                 -- Default system events (i.e not invoked by
