@@ -5,7 +5,7 @@ module Language.IR.FromEventBased (
 
 import Language.IR.IR 
 import qualified Language.EventBased.Parser as P 
-import Language.EventBased.Parser (actAssign,valAssign,rules)
+import Language.EventBased.Parser (actAssign,valAssign)
 import Data.Map (Map) 
 import qualified Data.Map as Map
 import Language.EventBased.Parser (Interval,Email,BinOp,UnOp)
@@ -69,7 +69,6 @@ getNextReg :: BlockTransformer RegID
 getNextReg = do c <- getNextCounterB
                 return $ RegID ("reg_" ++ (show c))
 
-
 addInstruction :: Instruction -> BlockTransformer () 
 addInstruction i = workingBlock %= (++ [i]) 
 
@@ -88,7 +87,7 @@ a ^%= b = lift (a %= b)
 -- Converter Functions --
 
 fromEventBased :: P.Program -> Program 
-fromEventBased p = (execState convert $ initTransformState p) ^. ir
+fromEventBased p = (execState convert $ initTransformState p)^.ir
 
 -- Converter Monads --
 
@@ -100,7 +99,7 @@ convert = do convertActAssigns
 -- Go through all of the action assignments, and convert each one into
 --   a block in the IR.  
 convertActAssigns :: Transformer ()
-convertActAssigns = do l <- use $ ast . actAssign
+convertActAssigns = do l <- use $ ast.actAssign
                        mapM_ convertActAssign l
                                   
 convertActAssign :: P.AAssign -> Transformer() 
@@ -114,7 +113,7 @@ convertBlock s b = do let initState = initBlockState []
                       c <- getNextCounter
                       let id = BlockID $ s ++ "_" ++ (show c)
                       let newBlock = retState ^. workingBlock
-                      ir . blocks %= Map.insert id newBlock 
+                      ir.blocks %= Map.insert id newBlock 
                       return id
 
 convertAExpr :: P.AExpr -> BlockTransformer ()
@@ -139,7 +138,7 @@ convertRecord t (P.Record v s) =
      let vName = "_fld_var_" ++ s ++ (show c)
      let bName = "record_blk_" ++ s
      let fID   = (FieldID s) 
-     ir . tables ^%= Map.insertWith (++) t [fID]
+     ir.tables ^%= Map.insertWith (++) t [fID]
      bID <- doWithinB $ convertBlock bName [P.AEVassign (P.ID vName) v]
      return (bID,(fID,Var (VarID vName)))
 
@@ -223,7 +222,13 @@ convertCall fn p =
      return (Reg ro) 
 
 convertValAssigns :: Transformer ()
-convertValAssigns = error "Unimplemented" 
+convertValAssigns = 
+  do assigns <- use $ ast.valAssign
+     mainBlock <- convertBlock "actAssigns" assigns 
+     let mEvent = (EventID "Main")
+     ir.rules %= Map.insertWith (++) mEvent [mainBlock]
+     ir.events %= Map.insert Boot mEvent
+     return ()
 
 convertRules :: Transformer ()
 convertRules = error "Unimplemented" 

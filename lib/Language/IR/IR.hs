@@ -74,7 +74,7 @@ data WaitType = Waiting
               | Not_Waiting
               deriving (Show,Read,Eq,Ord)
 
--- Instructions that we can take.
+-- Instructions that we can take
 data Instruction = SimultAt WaitType Time [BlockID]
                  | Store VarID Value
                  | Send Email Value
