@@ -10,5 +10,6 @@ To test sample output of lexer & parser from current directory:
 ``` 
 ../dist/build/Sensornet-Lexer/Sensornet-Lexer < test.txt
 ../dist/build/Sensornet-Parser/Sensornet-Parser < test.txt
+../dist/build/Sensornet-IRifier/Sensornet-IRifier < test.txt 
 ```
 
