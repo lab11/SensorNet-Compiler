@@ -106,10 +106,12 @@ makeLenses ''Program
   
  - No RegID may be repeated in a block 
  - No RegID may be used before it is defined in a block
- - No RegID may be assigned more than once, unless it is   <<<< Elaborate? Unless assigned explicitly?
- - Simult and If must have at least one block to execute
- - Never use the String_Concat binop                       <<<< String_Append binop?
- - All values must be initialized before they are used.
+ - No RegID may be assigned more than once. 
+ - Simult and If must have at least one block to execute, 
+ - Never use the String_Append binop
+ - All variables must be initialized before they are used. 
+   i.e. Variables must be initialized in blocks called from Boot without any
+        delay.
  - Optional: Register names musn't be repeated across the whole program.
  - Optional: Don't do anything that would require constant propagation
 
