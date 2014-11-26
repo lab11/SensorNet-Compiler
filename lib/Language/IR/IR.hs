@@ -4,7 +4,7 @@ module Language.IR.IR where
 
 import Data.Map (Map) 
 import qualified Data.Map as Map
-import Language.EventBased.Parser (Interval,Email,BinOp,UnOp)
+import Language.EventBased.Parser (Interval,Email,BinOp(..),UnOp)
 import Data.Time.LocalTime (LocalTime)
 import Control.Lens
 
@@ -105,10 +105,10 @@ makeLenses ''Program
  There's a number of invariants that we need to preserve
   
  - No RegID may be repeated in a block 
- - No RegID may be used before it is defined in a block 
- - No RegID may be assigned more than once, unless it is 
+ - No RegID may be used before it is defined in a block
+ - No RegID may be assigned more than once, unless it is   <<<< Elaborate? Unless assigned explicitly?
  - Simult and If must have at least one block to execute
- - Never use the String_Concat binop 
+ - Never use the String_Concat binop                       <<<< String_Append binop?
  - All values must be initialized before they are used.
  - Optional: Register names musn't be repeated across the whole program.
  - Optional: Don't do anything that would require constant propagation
@@ -120,3 +120,65 @@ makeLenses ''Program
 
 
  -} 
+
+-- INVARIANT PRESERVATION
+
+programValid :: Program -> Bool
+programValid prog = checkRegNoRepeat prog
+         && checkRegDefined prog
+         && checkRegNoReassign prog
+         && checkSimultIfBlock prog
+         && checkNoStrConcatOp prog
+         && checkValueInit prog
+
+-- Block Access
+
+getBlockMap :: Program -> Map BlockID Block 
+getBlockMap = view blocks
+
+getBlocks   :: Program -> [Block]
+getBlocks prog = [snd ax | ax <- (Map.toList (getBlockMap prog))]
+
+-- Instruction Breakdown
+
+getReg :: Instruction -> RegID
+getReg (Call (Register r) _ _) = r
+getReg (Concat (Register r) _) = r
+getReg (BinaryOp (Register r) _ _ _) = r
+getReg (UnaryOp (Register r) _ _) = r
+getReg x = RegID ""
+
+getValue :: Instruction -> [Value]
+getValue (Store _ v) = [v]
+getValue (Send _ v) = [v]
+getValue (Gather _ v) = [] --
+getValue (Call _ _ v) = v
+getValue (Concat _ v) = v
+getValue (If v _ _) = [v]
+getValue (BinaryOp _ _ v1 v2) = [v1,v2]
+getValue (UnaryOp _ _ v) = [v]
+getValue x = []
+
+getOp  :: Instruction -> BinOp
+getOp (BinaryOp _ b _ _) = b
+getOp x = Logical_And --throway value, only interested in String_Append
+
+-- Checks
+
+checkRegNoRepeat :: Program -> Bool   -- No RegID may be repeated in a block
+checkRegNoRepeat prog = True
+
+checkRegDefined :: Program -> Bool    -- No RegID may be used before it is defined in a block
+checkRegDefined prog = True
+
+checkRegNoReassign :: Program -> Bool -- No RegID may be assigned more than once, unless it is
+checkRegNoReassign prog = True
+
+checkSimultIfBlock :: Program -> Bool -- Simult and If must have at least one block to execute
+checkSimultIfBlock prog = True
+
+checkNoStrConcatOp :: Program -> Bool -- Never use the String_Concat binop
+checkNoStrConcatOp prog = not (String_Append `elem` [getOp b | a<-(getBlocks prog), b<-a])
+
+checkValueInit :: Program -> Bool
+checkValueInit prog = True
