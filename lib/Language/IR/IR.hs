@@ -6,6 +6,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Language.EventBased.Parser (Interval,Email,BinOp(..),UnOp)
 import Data.Time.LocalTime (LocalTime)
+import Data.List as List
 import Control.Lens
 
 {-
@@ -138,8 +139,11 @@ programValid prog = checkRegNoRepeat prog
 getBlockMap :: Program -> Map BlockID Block 
 getBlockMap = view blocks
 
-getBlocks   :: Program -> [Block]
+getBlocks :: Program -> [Block]
 getBlocks prog = [snd ax | ax <- (Map.toList (getBlockMap prog))]
+
+getBlockRegs :: Program -> [[RegID]]
+getBlockRegs prog = [filter (/=(RegID "")) [getReg b|b<-a] | a<-(getBlocks prog)]
 
 -- Instruction Breakdown
 
@@ -163,12 +167,12 @@ getValue x = []
 
 getOp  :: Instruction -> BinOp
 getOp (BinaryOp _ b _ _) = b
-getOp x = Logical_And --throway value, only interested in String_Append
+getOp x = Logical_And -- throwaway value, only interested in String_Append
 
 -- Checks
 
 checkRegNoRepeat :: Program -> Bool   -- No RegID may be repeated in a block
-checkRegNoRepeat prog = True
+checkRegNoRepeat prog = not (False `elem` [(List.nub c)==c|c<-(getBlockRegs prog)])
 
 checkRegDefined :: Program -> Bool    -- No RegID may be used before it is defined in a block
 checkRegDefined prog = True
@@ -179,7 +183,7 @@ checkRegNoReassign prog = True
 checkSimultIfBlock :: Program -> Bool -- Simult and If must have at least one block to execute
 checkSimultIfBlock prog = True
 
-checkNoStrConcatOp :: Program -> Bool -- Never use the String_Concat binop
+checkNoStrConcatOp :: Program -> Bool -- Never use the String_Append binop
 checkNoStrConcatOp prog = not (String_Append `elem` [getOp b | a<-(getBlocks prog), b<-a])
 
 checkValueInit :: Program -> Bool
