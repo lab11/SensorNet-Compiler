@@ -177,8 +177,8 @@ checkRegNoRepeat prog = not (False `elem` [(List.nub c)==c|c<-(getBlockRegs prog
 checkRegDefined :: Program -> Bool    -- No RegID may be used before it is defined in a block
 checkRegDefined prog = True
 
-checkRegNoReassign :: Program -> Bool -- No RegID may be assigned more than once, unless it is
-checkRegNoReassign prog = True
+checkRegNoReassign :: Program -> Bool -- No RegID may be assigned more than once
+checkRegNoReassign prog = let c = [b | a<-(getBlockRegs prog),b<-a] in (List.nub c)==c 
 
 checkSimultIfBlock :: Program -> Bool -- Simult and If must have at least one block to execute
 checkSimultIfBlock prog = True
