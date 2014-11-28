@@ -145,6 +145,9 @@ getBlocks prog = [snd ax | ax <- (Map.toList (getBlockMap prog))]
 getBlockRegs :: Program -> [[RegID]]
 getBlockRegs prog = [filter (/=(RegID "")) [getReg b|b<-a] | a<-(getBlocks prog)]
 
+getBlockValRegs :: Program -> [[[RegID]]]
+getBlockValRegs prog = [[filter (/=(RegID ""))[getValReg c|c<-(getValue b)]|b<-a] | a<-(getBlocks prog)]
+
 -- Instruction Breakdown
 
 getReg :: Instruction -> RegID
@@ -157,7 +160,7 @@ getReg x = RegID ""
 getValue :: Instruction -> [Value]
 getValue (Store _ v) = [v]
 getValue (Send _ v) = [v]
-getValue (Gather _ v) = [] --
+getValue (Gather _ v) = [snd t | t<-v]
 getValue (Call _ _ v) = v
 getValue (Concat _ v) = v
 getValue (If v _ _) = [v]
@@ -165,14 +168,26 @@ getValue (BinaryOp _ _ v1 v2) = [v1,v2]
 getValue (UnaryOp _ _ v) = [v]
 getValue x = []
 
-getOp  :: Instruction -> BinOp
+getOp :: Instruction -> BinOp
 getOp (BinaryOp _ b _ _) = b
 getOp x = Logical_And -- throwaway value, only interested in String_Append
+
+getSimultIfBlocks  :: Instruction -> [BlockID]
+getSimultIfBlocks (SimultAt _ _ b) = b
+getSimultIfBlocks (If _ (Just b1) (Just b2)) = [b1,b2]
+getSimultIfBlocks (If _ (Just b1) Nothing) = [b1]
+getSimultIfBlocks (If _ Nothing (Just b2)) = [b2]
+getSimultIfBlocks (If _ Nothing Nothing) = []
+getSimultIfBlocks x = [BlockID "not_soi"] 
+
+getValReg :: Value -> RegID
+getValReg (Reg r) = r
+getValReg x = RegID ""
 
 -- Checks
 
 checkRegNoRepeat :: Program -> Bool   -- No RegID may be repeated in a block
-checkRegNoRepeat prog = not (False `elem` [(List.nub c)==c|c<-(getBlockRegs prog)])
+checkRegNoRepeat prog = not (False `elem` [(List.nub c)==c | c<-(getBlockRegs prog)])
 
 checkRegDefined :: Program -> Bool    -- No RegID may be used before it is defined in a block
 checkRegDefined prog = True
@@ -181,7 +196,7 @@ checkRegNoReassign :: Program -> Bool -- No RegID may be assigned more than once
 checkRegNoReassign prog = let c = [b | a<-(getBlockRegs prog),b<-a] in (List.nub c)==c 
 
 checkSimultIfBlock :: Program -> Bool -- Simult and If must have at least one block to execute
-checkSimultIfBlock prog = True
+checkSimultIfBlock prog = not (0 `elem` [length (getSimultIfBlocks b) | a<-(getBlocks prog), b<-a])
 
 checkNoStrConcatOp :: Program -> Bool -- Never use the String_Append binop
 checkNoStrConcatOp prog = not (String_Append `elem` [getOp b | a<-(getBlocks prog), b<-a])
