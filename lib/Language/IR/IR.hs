@@ -127,12 +127,13 @@ makeLenses ''Program
 -- INVARIANT PRESERVATION
 
 programValid :: Program -> Bool
-programValid prog = checkRegNoRepeat prog
-         && checkRegDefined prog
-         && checkRegNoReassign prog
-         && checkSimultIfBlock prog
-         && checkNoStrConcatOp prog
-         && checkValueInit prog
+programValid prog = not 
+          ( checkRegNoRepeat prog
+         || checkRegDefined prog
+         || checkRegNoReassign prog
+         || checkSimultIfBlock prog
+         || checkNoStrConcatOp prog
+         || checkValueInit prog )
 
 -- Block Access
 
@@ -201,19 +202,19 @@ getValVar x = VarID ""
 -- Checks
 
 checkRegNoRepeat :: Program -> Bool   -- No RegID may be repeated in a block
-checkRegNoRepeat prog = not (False `elem` [(List.nub c)==c | c<-(getBlockRegs prog)])
+checkRegNoRepeat prog = False `elem` [(List.nub c)==c | c<-(getBlockRegs prog)]
 
 checkRegDefined :: Program -> Bool    -- No RegID may be used without being defined
-checkRegDefined prog = not (False `elem` [c `elem` (fst a) | a<-getBlockValRegs prog,b<-(snd a),c<-b])
+checkRegDefined prog = False `elem` [c `elem` (fst a) | a<-getBlockValRegs prog,b<-(snd a),c<-b]
 
 checkRegNoReassign :: Program -> Bool -- No RegID may be assigned more than once
-checkRegNoReassign prog = let c = [b | a<-(getBlockRegs prog),b<-a] in (List.nub c)==c 
+checkRegNoReassign prog = let c = [b | a<-(getBlockRegs prog),b<-a] in (List.nub c)/=c 
 
 checkSimultIfBlock :: Program -> Bool -- Simult and If must have at least one block to execute
-checkSimultIfBlock prog = not (0 `elem` [length (getSimultIfBlocks b) | a<-(getBlocks prog), b<-a])
+checkSimultIfBlock prog = 0 `elem` [length (getSimultIfBlocks b) | a<-(getBlocks prog), b<-a]
 
 checkNoStrConcatOp :: Program -> Bool -- Never use the String_Append binop
-checkNoStrConcatOp prog = not (String_Append `elem` [getOp b | a<-(getBlocks prog), b<-a])
+checkNoStrConcatOp prog = String_Append `elem` [getOp b | a<-(getBlocks prog), b<-a]
 
 checkValueInit :: Program -> Bool  -- All variables must be initialized
-checkValueInit prog = not (False `elem` ([c `elem` getBlockStoVars prog | a<-getBlockValVars prog,b<-a,c<-b]))
+checkValueInit prog = False `elem` [c `elem` getBlockStoVars prog | a<-getBlockValVars prog,b<-a,c<-b]
