@@ -145,8 +145,14 @@ getBlocks prog = [snd ax | ax <- (Map.toList (getBlockMap prog))]
 getBlockRegs :: Program -> [[RegID]]
 getBlockRegs prog = [filter (/=(RegID "")) [getReg b|b<-a] | a<-(getBlocks prog)]
 
-getBlockValRegs :: Program -> [[[RegID]]]
-getBlockValRegs prog = [[filter (/=(RegID ""))[getValReg c|c<-(getValue b)]|b<-a] | a<-(getBlocks prog)]
+getBlockValRegs :: Program -> [([RegID], [[RegID]])]
+getBlockValRegs prog = zip (getBlockRegs prog) [[filter (/=(RegID ""))[getValReg c|c<-(getValue b)]|b<-a] | a<-(getBlocks prog)]
+
+getBlockValVars :: Program -> [[[VarID]]]
+getBlockValVars prog = [[filter (/=(VarID ""))[getValVar c|c<-(getValue b)]|b<-a] | a<-(getBlocks prog)]
+
+getBlockStoVars :: Program -> [VarID]
+getBlockStoVars prog = filter (/=VarID "") [getStoreVar b | a<-(getBlocks prog), b<-a]
 
 -- Instruction Breakdown
 
@@ -178,19 +184,27 @@ getSimultIfBlocks (If _ (Just b1) (Just b2)) = [b1,b2]
 getSimultIfBlocks (If _ (Just b1) Nothing) = [b1]
 getSimultIfBlocks (If _ Nothing (Just b2)) = [b2]
 getSimultIfBlocks (If _ Nothing Nothing) = []
-getSimultIfBlocks x = [BlockID "not_soi"] 
+getSimultIfBlocks x = [BlockID ""] 
+
+getStoreVar :: Instruction -> VarID
+getStoreVar (Store v _) = v
+getStoreVar x = VarID ""
 
 getValReg :: Value -> RegID
 getValReg (Reg r) = r
 getValReg x = RegID ""
+
+getValVar :: Value -> VarID
+getValVar (Var v) = v
+getValVar x = VarID ""
 
 -- Checks
 
 checkRegNoRepeat :: Program -> Bool   -- No RegID may be repeated in a block
 checkRegNoRepeat prog = not (False `elem` [(List.nub c)==c | c<-(getBlockRegs prog)])
 
-checkRegDefined :: Program -> Bool    -- No RegID may be used before it is defined in a block
-checkRegDefined prog = True
+checkRegDefined :: Program -> Bool    -- No RegID may be used without being defined
+checkRegDefined prog = not (False `elem` [c `elem` (fst a) | a<-getBlockValRegs prog,b<-(snd a),c<-b])
 
 checkRegNoReassign :: Program -> Bool -- No RegID may be assigned more than once
 checkRegNoReassign prog = let c = [b | a<-(getBlockRegs prog),b<-a] in (List.nub c)==c 
@@ -201,5 +215,5 @@ checkSimultIfBlock prog = not (0 `elem` [length (getSimultIfBlocks b) | a<-(getB
 checkNoStrConcatOp :: Program -> Bool -- Never use the String_Append binop
 checkNoStrConcatOp prog = not (String_Append `elem` [getOp b | a<-(getBlocks prog), b<-a])
 
-checkValueInit :: Program -> Bool
-checkValueInit prog = True
+checkValueInit :: Program -> Bool  -- All variables must be initialized
+checkValueInit prog = not (False `elem` ([c `elem` getBlockStoVars prog | a<-getBlockValVars prog,b<-a,c<-b]))
