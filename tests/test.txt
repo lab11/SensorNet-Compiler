@@ -21,7 +21,7 @@ ON( EVERY 1 day ){
     fizz := fizz + 15;
     IF(fizz >= 123){
         DO some_other_thing;
-        bar := Foo(a,b + c,"123" << 42 << "this is a string" << baz);
+        bar := Foo(a,b + c,"123" << 42 << "this is a string" << bar);
     };
 } 
 
