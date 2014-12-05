@@ -115,8 +115,8 @@
 //   a bit of research makes me think this isn't feasible.  
 #define GET_GATHER_ID()
 
-void spawn(void (*func)(void), int sem_id);
-void join(void (*func)(bool timed_out), int sem_id, int timeout);
+void Spawn(void (*func)(void), int sem_id);
+void Join(void (*func)(bool timed_out), int sem_id, int timeout);
 
 // ------------ Timer OPs -------------
 
@@ -124,47 +124,43 @@ typedef uint64_t time_t; // For the moment standard posix time with a
 		 	 // granularity of one second. 
 
 // Schedules a function to be called some number of seconds into the future
-void schedule_relative(void (*x)(void), int seconds); 
+void Schedule_Relative(void (*x)(void), int seconds); 
 
 // Schedules a function to be called at some absolute time
-void schedule_absolute(void (*x)(void), time_t time); 
+void Schedule_Absolute(void (*x)(void), time_t time); 
 
 // Gets the current absolute time. 
-time_t get_time(); 
+time_t Get_Time(); 
 
 // ------------ Timer OPs -------------
-
-// Macro shenangiangs to a unique IRQ number at compiler time
-//   a bit of research makes me think this isn't feasible.  
-#define GET_EVENT_IRQ()
 
 typedef enum {RISING_EDGE, FALLING_EDGE} trigger;
 
 // Call a function when an interrupt with a particular number is triggered. 
-void schedule_interrupt(void (*x)(void), int int_num, trigger trigger_type);
+void Schedule_Interrupt(void (*x)(void), int int_num, trigger trigger_type);
 
 // ------------ Local Data OPs -------------
 
 // Returns an integer unique to a specific node 
-int get_node_id();
+int Get_Node_Id();
 
 // ------------ Temprature Sensor OPs -------------
 
 // Returns the temperature in Celsius
-float get_temperature();
+float Get_Temperature();
 
 // ------------ Brightness Sensor OPs -------------
 
 // Returns the current relative brightness
-float get_brightness();
+float Get_Brightness();
 
 // ------------ LED Output OPs -------------
 
 // Sets the state of the external LED  
-int set_led(bool state); 
+int Set_Led(bool state); 
 
 // Gets the current state of the external LED 
-int get_led();
+int Get_Led();
 
 // ------------ Table OPs -------------
 
@@ -193,9 +189,9 @@ int get_led();
  *   the table. Then it calls flush_buffer()
  */
 
-void store_value(int table, int val_num, void * buf, size_t buf_len); 
-void flush_buffer(int table);
-void finish_record(int table); 
+void Store_Value(int table, int val_num, void * buf, size_t buf_len); 
+void Flush_Buffer(int table);
+void Finish_Record(int table); 
 
 /* The SNC --> OS/Runtime interface
  
