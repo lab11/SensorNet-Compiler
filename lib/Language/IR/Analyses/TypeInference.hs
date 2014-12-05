@@ -1,8 +1,10 @@
 module Language.IR.Analyses.TypeInference where
 
 import Language.IR
+import Language.C
+import Language.C.System.GCC
 
-{-}
+{-
 data Instruction = SimultAt WaitType Time [BlockID]
 | Store VarID Value
 | Send Email Value
@@ -37,3 +39,14 @@ inferInstruction (UnaryOp storeReg op a) =
 -}
 -- Everything else
 inferInstruction s = id s
+
+findDeclaration :: ExternCall  -> CTranslUnit -> Maybe (CExternalDeclaration NodeInfo)
+findDeclaration call (CTranslUnit declList _) = mayHead matchingDecls where
+  matchingDecls = filter (matchingFunctionDecl call) declList
+
+matchingFunctionDecl :: ExternCall -> CExternalDeclaration NodeInfo -> Bool
+matchingFunctionDecl call (CFDefExt functionDef) = True -- Need to actually check name
+matchingFunctionDecl _ _ = False
+
+mayHead (x:xs) = Just x
+mayHead [] = Nothing
