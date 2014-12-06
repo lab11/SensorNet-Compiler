@@ -28,6 +28,7 @@ library
                      pretty-show,
                      containers,
                      language-c,
+                     haskell-src-exts,
                      mtl >= 2.2.1,
                      lens >= 4.6,
                      time >= 1.5
