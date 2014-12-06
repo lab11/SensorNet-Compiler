@@ -45,9 +45,9 @@ newtype RegID = RegID String      -- Local Register Identifier
 newtype VarID = VarID String      -- Global Variable Identifier
               deriving (Show,Read,Eq,Ord)
 
-
 data DataID = RegName RegID
             | VarName VarID 
+            | FldName FieldID
             deriving (Show,Read,Eq,Ord)
 
 
