@@ -5,6 +5,7 @@ module Language.IR.Analyses.TypeInference where
 import Language.IR
 import Language.C
 import Language.C.System.GCC
+import Text.Show.Pretty (ppShow)
 import Language.C.Data.Ident
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -16,6 +17,9 @@ import Data.Maybe
 import Control.Monad.State
 import Control.Monad.Trans (lift) 
 import Control.Lens
+import System.IO.Unsafe
+import Debug.Trace
+
 
 {-
 data Instruction = SimultAt WaitType Time [BlockID]
@@ -49,8 +53,9 @@ numericTypes = [IntT,FloatT]
 
 inferTypes :: Program -> FilePath -> IO (Map DataID [Type]) 
 inferTypes prog file = 
-  do translationUnit <- parseHeaderFile file 
+  do translationUnit <- parseHeaderFile file
      let fEnv = genFEnv translationUnit 
+     putStrLn . (++ "\n\n\n") . ppShow $ fEnv -- TODO : Remove debug statements 
      return $ inferProg fEnv prog
 
  -- File IO --
@@ -110,7 +115,7 @@ data TypingState = TypingState {
   _typeMap :: Map DataID [Type],
   _env :: Map String Type,
   _prog :: Program
-}
+} deriving (Eq,Show,Read)
 
   -- Manually Make Lenses because template haskell or control.lens is broken? 
 setIsModified :: TypingState -> Bool -> TypingState
@@ -147,16 +152,21 @@ inferProg e p = (execState runInference $ newTypingState e p)^.typeMap
 runInference :: Typer () 
 runInference =
   do isModified .= False 
+--   s <- use $ typeMap
+--   return $! (trace "test" ())
+--   return $! (trace (ppShow s) ())
+--   p <- use $ prog
+--   return (trace (ppShow p) ())
      runInferencePass
      isMod <- use isModified 
      if isMod 
      then runInference
      else return ()
-
+-- (\ x -> trace (ppShow x) x) 
 runInferencePass :: Typer ()
 runInferencePass = 
   do  instrs <- use $ prog.blocks
-      mapM_ infCmd $ (concat . Map.elems) instrs
+      mapM_ infCmd $ concat . Map.elems $ instrs
   where infCmd = inferInst
 
 inferInst :: Instruction -> Typer ()
@@ -272,11 +282,11 @@ instance Typeable DataID where
           Just t  -> return t 
   constrainType d t = 
     do dt <- getType d
-       let ct = union dt t 
-       if (ct /= [])
+       let ct = intersect dt t 
+       if ((ct \\ dt) /= [])
        then isModified .= True
        else return ()
-       typeMap.at d .= Just ct  
+       typeMap.at d .= Just ct
 
 instance Typeable VarID where 
   getType v = getType (VarName v) 
