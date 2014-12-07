@@ -111,32 +111,28 @@
  * */
 
 
-// Macro shenangiangs to a unique ID for a gather op at compiler time
-//   a bit of research makes me think this isn't feasible.  
-#define GET_GATHER_ID()
+typedef unsigned char bool;
+typedef unsigned int size_t;
+typedef unsigned long int interval_t; 
+typedef unsigned long int time_t; // For the moment standard posix time with a 
+		 	          // granularity of one second. 
 
 void spawn(void (*func)(void), int sem_id);
-void join(void (*func)(bool timed_out), int sem_id, int timeout);
+void join(void (*func)(bool), int sem_id, int timeout);
 
 // ------------ Timer OPs -------------
 
-typedef uint64_t time_t; // For the moment standard posix time with a 
-		 	 // granularity of one second. 
 
 // Schedules a function to be called some number of seconds into the future
-void schedule_relative(void (*x)(void), int seconds); 
+void schedule_relative(void (*x)(void), interval_t seconds); 
 
 // Schedules a function to be called at some absolute time
 void schedule_absolute(void (*x)(void), time_t time); 
 
 // Gets the current absolute time. 
-time_t get_time(); 
+time_t Get_Time(); 
 
 // ------------ Timer OPs -------------
-
-// Macro shenangiangs to a unique IRQ number at compiler time
-//   a bit of research makes me think this isn't feasible.  
-#define GET_EVENT_IRQ()
 
 typedef enum {RISING_EDGE, FALLING_EDGE} trigger;
 
@@ -146,25 +142,33 @@ void schedule_interrupt(void (*x)(void), int int_num, trigger trigger_type);
 // ------------ Local Data OPs -------------
 
 // Returns an integer unique to a specific node 
-int get_node_id();
+int Get_Node_Id();
 
 // ------------ Temprature Sensor OPs -------------
 
 // Returns the temperature in Celsius
-float get_temperature();
+float Get_Temperature();
 
 // ------------ Brightness Sensor OPs -------------
 
 // Returns the current relative brightness
-float get_brightness();
+float Get_Brightness();
 
 // ------------ LED Output OPs -------------
 
 // Sets the state of the external LED  
-int set_led(bool state); 
+int Set_Led(bool state); 
 
 // Gets the current state of the external LED 
-int get_led();
+int Get_Led();
+
+// ------------ Output OPs -------------
+
+void Print_Message(const char* message);
+
+// ------------ Email Output OPs -------------
+
+void send_email(const char* address, const char * message, int max_len) ;
 
 // ------------ Table OPs -------------
 

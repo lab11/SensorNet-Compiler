@@ -6,4 +6,4 @@ import Language.EventBased.Parser
 import Language.IR
 import Language.IR.Analyses.TypeInference
 
-main = interact (ppShow . infer . fromEventBased . progParse . tokenize)
+main = interact (ppShow . fromEventBased . progParse . tokenize)
