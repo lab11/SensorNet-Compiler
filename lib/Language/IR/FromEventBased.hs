@@ -162,7 +162,7 @@ convertAEGather r t =
 convertRecord:: TableID -> P.Record -> BlockTransformer (BlockID,(FieldID,Value))
 convertRecord t (P.Record v s) = 
   do c <- getNextCounterB 
-     let vName = "_fld_var_" ++ s ++ (show c)
+     let vName = "_fld_var_" ++ s ++ "_" ++ (show c)
      let bName = "record_blk_" ++ s
      let fID   = (FieldID s) 
      ir.tables ^%= Map.insertWith (++) t [fID]
