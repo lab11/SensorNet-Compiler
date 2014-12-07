@@ -1,0 +1,26 @@
+
+standard_gather_action := GATHER { 
+    SAVE Get_Node_Id() AS node_id, 
+    SAVE Get_Time() AS time, 
+    SAVE Get_Temprature() AS temp, 
+    SAVE Get_Brightness() AS light
+} INTO Data_Table ;
+
+led_state := false; 
+
+ON(EVERY 5 m){
+    DO standard_gather_action; 
+    SEND foo@bar.com "Message";
+    led_state := ! led_state;
+    EXECUTE Set_Led(led_state); 
+    EXECUTE Print_Message("current led state is " << led_state ); 
+    IF(Other_Function(1,4,led_state)){
+        EXECUTE Print_Message("Something"); 
+    }; 
+}
+
+ON ( 5 mins AFTER ( AFTER ( led_state ) BEGINS CHECKING EVERY 1 min )) {
+    DO standard_gather_action;
+    EXECUTE Other_Function(3,5.6,false); 
+}
+

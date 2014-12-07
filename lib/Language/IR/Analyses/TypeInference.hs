@@ -17,8 +17,6 @@ import Data.Maybe
 import Control.Monad.State
 import Control.Monad.Trans (lift) 
 import Control.Lens
-import System.IO.Unsafe
-import Debug.Trace
 
 
 {-

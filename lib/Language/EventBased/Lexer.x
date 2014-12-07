@@ -15,7 +15,7 @@ import Data.Time.Format (parseTimeOrError,defaultTimeLocale)
 import Data.Time.LocalTime (LocalTime,TimeOfDay)
 }
 
-%wrapper "basic"
+%wrapper "posn"
 
 $digit    = [0-9]      		-- Digits
 $octdig   = [0-7]
@@ -61,85 +61,85 @@ tokens :-
   
   -- Keywords 
 
-  "ON"                        { \s -> (Key On) } 
-  "EVERY"                     { \s -> (Key Every) }
-  "AFTER"                     { \s -> (Key After) }
-  "BEGINS"                    { \s -> (Key Begins) }
-  "ENDS"                      { \s -> (Key Ends) }
-  "PERFORM"                   { \s -> (Key Perform) } 
-  "WITH" $white+ "COOLDOWN"   { \s -> (Key With_Cooldown) }
-  "WITHIN"                    { \s -> (Key Within) }
-  "INTERRUPT"                 { \s -> (Key Interrupt) }
-  "GATHER"                    { \s -> (Key Gather) }
-  "SEND"                      { \s -> (Key Send) }
-  "EXECUTE"                   { \s -> (Key Execute) }
-  "IF"                        { \s -> (Key If) }
-  "ELSE"                      { \s -> (Key Else) }
-  "DO"                        { \s -> (Key Do) }
-  "SAVE"                      { \s -> (Key Save) }
-  "INTO"                      { \s -> (Key Into) }
-  "AS"                        { \s -> (Key As) }
-  "SET" $white+ "OPTIONS"     { \s -> (Key Set_Options) }
-  "CHECKING" $white+ "EVERY"  { \s -> (Key Checking_Every) }
-  "STARTING" $white+ "AT"     { \s -> (Key Starting_At) }
-  "UPDATE"                    { \s -> (Key Update) } 
+  "ON"                        { \ _ s -> (Key On) } 
+  "EVERY"                     { \ _ s -> (Key Every) }
+  "AFTER"                     { \ _ s -> (Key After) }
+  "BEGINS"                    { \ _ s -> (Key Begins) }
+  "ENDS"                      { \ _ s -> (Key Ends) }
+  "PERFORM"                   { \ _ s -> (Key Perform) } 
+  "WITH" $white+ "COOLDOWN"   { \ _ s -> (Key With_Cooldown) }
+  "WITHIN"                    { \ _ s -> (Key Within) }
+  "INTERRUPT"                 { \ _ s -> (Key Interrupt) }
+  "GATHER"                    { \ _ s -> (Key Gather) }
+  "SEND"                      { \ _ s -> (Key Send) }
+  "EXECUTE"                   { \ _ s -> (Key Execute) }
+  "IF"                        { \ _ s -> (Key If) }
+  "ELSE"                      { \ _ s -> (Key Else) }
+  "DO"                        { \ _ s -> (Key Do) }
+  "SAVE"                      { \ _ s -> (Key Save) }
+  "INTO"                      { \ _ s -> (Key Into) }
+  "AS"                        { \ _ s -> (Key As) }
+  "SET" $white+ "OPTIONS"     { \ _ s -> (Key Set_Options) }
+  "CHECKING" $white+ "EVERY"  { \ _ s -> (Key Checking_Every) }
+  "STARTING" $white+ "AT"     { \ _ s -> (Key Starting_At) }
+  "UPDATE"                    { \ _ s -> (Key Update) } 
 
   -- Time Keywords
 
-  "d" ("ay" "s"?)?            { \s -> (RelTime Days) } 
-  "h" ("ou"? "r" "s"?)?       { \s -> (RelTime Hours) } 
-  "m" ("in" "ute"? "s"?)?     { \s -> (RelTime Minutes) } 
-  "s" ("ec" "ond"? "s"?)?     { \s -> (RelTime Seconds) }
+  "d" ("ay" "s"?)?            { \ _ s -> (RelTime Days) } 
+  "h" ("ou"? "r" "s"?)?       { \ _ s -> (RelTime Hours) } 
+  "m" ("in" "ute"? "s"?)?     { \ _ s -> (RelTime Minutes) } 
+  "s" ("ec" "ond"? "s"?)?     { \ _ s -> (RelTime Seconds) }
 
   -- Flow Control Elements
 
-  "("                         { \s -> (Flow OpParen) }
-  ")"                         { \s -> (Flow ClParen) }
-  "{"                         { \s -> (Flow OpBracket) }
-  "}"                         { \s -> (Flow ClBracket) }
-  "["                         { \s -> (Flow OpSqBracket) }
-  "]"                         { \s -> (Flow ClSqBracket) }
-  ";"                         { \s -> (Flow Semicolon) }
-  ":"                         { \s -> (Flow Colon) }
-  ","                         { \s -> (Flow Comma) }
-  ":="                        { \s -> (Flow Assign) }
+  "("                         { \ _ s -> (Flow OpParen) }
+  ")"                         { \ _ s -> (Flow ClParen) }
+  "{"                         { \ _ s -> (Flow OpBracket) }
+  "}"                         { \ _ s -> (Flow ClBracket) }
+  "["                         { \ _ s -> (Flow OpSqBracket) }
+  "]"                         { \ _ s -> (Flow ClSqBracket) }
+  ";"                         { \ _ s -> (Flow Semicolon) }
+  ":"                         { \ _ s -> (Flow Colon) }
+  ","                         { \ _ s -> (Flow Comma) }
+  ":="                        { \ _ s -> (Flow Assign) }
 
   -- Operators 
 
-  "&&"                        { \s -> (Op Logical_And) }
-  "||"                        { \s -> (Op Logical_Or) }
-  "^"                         { \s -> (Op Logical_Xor) }
-  "!"                         { \s -> (Op Logical_Not) }
-  "=="                        { \s -> (Op Structural_Equality) }
-  ">"                         { \s -> (Op Greater_Than) }
-  ">="                        { \s -> (Op Greater_Than_Equals) }
-  "<"                         { \s -> (Op Less_Than) }
-  "<="                        { \s -> (Op Less_Than_Equals) }
-  "<<"                        { \s -> (Op String_Append) } 
-  "+"                         { \s -> (Op Add) } 
-  "-"                         { \s -> (Op Subtract) }
-  "*"                         { \s -> (Op Multiply) } 
-  "/"                         { \s -> (Op Divide) }
+  "&&"                        { \ _ s -> (Op Logical_And) }
+  "||"                        { \ _ s -> (Op Logical_Or) }
+  "^"                         { \ _ s -> (Op Logical_Xor) }
+  "!"                         { \ _ s -> (Op Logical_Not) }
+  "=="                        { \ _ s -> (Op Structural_Equality) }
+  ">"                         { \ _ s -> (Op Greater_Than) }
+  ">="                        { \ _ s -> (Op Greater_Than_Equals) }
+  "<"                         { \ _ s -> (Op Less_Than) }
+  "<="                        { \ _ s -> (Op Less_Than_Equals) }
+  "<<"                        { \ _ s -> (Op String_Append) } 
+  "+"                         { \ _ s -> (Op Add) } 
+  "-"                         { \ _ s -> (Op Subtract) }
+  "*"                         { \ _ s -> (Op Multiply) } 
+  "/"                         { \ _ s -> (Op Divide) }
 
   -- Literals                 
 
-  @string                     { \s -> (Lit (Str $ read s)) } 
-  @integer                    { \s -> (Lit (Integer $ read s )) } 
-  @float                      { \s -> (Lit (Flt $ read s))} 
-  ("t"|"T")"rue"              { \s -> (Lit (Boolean True))} 
-  ("f"|"F")"alse"             { \s -> (Lit (Boolean False))} 
-  @email                      { \s -> (Lit (Email s)) } 
-  @identifier                 { \s -> (Lit (Identifier s)) }
-  @opencall                   { \s -> (Lit (CallOpen $ init s)) }
-  @external                   { \s -> (Lit (Extern s)) }
+  @string                     { \ _ s -> (Lit (Str $ read s)) } 
+  @integer                    { \ _ s -> (Lit (Integer $ read s )) } 
+  @float                      { \ _ s -> (Lit (Flt $ read s))} 
+  ("t"|"T")"rue"              { \ _ s -> (Lit (Boolean True))} 
+  ("f"|"F")"alse"             { \ _ s -> (Lit (Boolean False))} 
+  @email                      { \ _ s -> (Lit (Email s)) } 
+  @identifier                 { \ _ s -> (Lit (Identifier s)) }
+  @opencall                   { \ _ s -> (Lit (CallOpen $ init s)) }
+  @external                   { \ _ s -> (Lit (Extern s)) }
 
   -- Absolute Time Literals 
 
-  @date                       { \s -> (Lit (AbsTime (parseTime "%m/%d/%Y" s)))}
-  @date $white+ @time12       { \s -> (Lit (AbsTime (parseTime "%m/%d/%Y %r" s)))}
-  @date $white+ @time24       { \s -> (Lit (AbsTime (parseTime "%m/%d/%Y %X" s)))}
-  @time24                     { \s -> (Lit (DailyTime (parseTime "%X" s)))}
-  @time12                     { \s -> (Lit (DailyTime (parseTime "%r" s)))}
+  @date                       { \ _ s -> (Lit (AbsTime (parseTime "%m/%d/%Y" s)))}
+  @date $white+ @time12       { \ _ s -> (Lit (AbsTime (parseTime "%m/%d/%Y %r" s)))}
+  @date $white+ @time24       { \ _ s -> (Lit (AbsTime (parseTime "%m/%d/%Y %X" s)))}
+  @time24                     { \ _ s -> (Lit (DailyTime (parseTime "%X" s)))}
+  @time12                     { \ _ s -> (Lit (DailyTime (parseTime "%r" s)))}
   
 {
 
