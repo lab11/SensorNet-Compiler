@@ -16,14 +16,14 @@ import Data.GraphViz.Attributes.Complete hiding (Int)
 
 {-
 	Outputs dot file (viewable with GraphViz)
-	e.g.	Sensornet-CFGrapher > test.dot
-	    	dot -Tpng test.dot > test.png
+	e.g.	Sensornet-CFGrapher ?.txt > ?.dot
+	    	dot -Tpng ?.dot > ?.png
 -}
 
 bID (BlockID s) = s
 
 eID (EventID s) = s
-g
+
 getEventMap = view rules
 
 getIDs prog = Map.fromList (zip ([eID (fst c) | c<-a]++[bID (fst c) | c<-b]) [1..(length a)+(length b)])

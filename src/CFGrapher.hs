@@ -13,4 +13,8 @@ import System.IO
 	    	dot -Tpng test.dot > test.png
 -}
 
-main = dotify (fromEventBased . progParse . tokenize)
+main = 
+  do args <- getArgs
+     let pf = args !! 0 
+     si <- readFile pf 
+     dotify ((fromEventBased . progParse . tokenize) si)
