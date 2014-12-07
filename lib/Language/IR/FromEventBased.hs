@@ -108,6 +108,7 @@ convert =
   do convertActAssigns 
      convertValAssigns 
      convertRules
+    -- cleanBootEvent
 
 -- Go through all of the action assignments, and convert each one into
 --   a block in the IR.  
@@ -158,10 +159,10 @@ convertAEGather r t =
      addInstruction $ SimultAt Waiting Now blocks
      addInstruction $ Gather bt fields
      
-convertRecord :: TableID -> P.Record -> BlockTransformer (BlockID,(FieldID,Value))
+convertRecord:: TableID -> P.Record -> BlockTransformer (BlockID,(FieldID,Value))
 convertRecord t (P.Record v s) = 
   do c <- getNextCounterB 
-     let vName = "_fld_var_" ++ s ++ (show c)
+     let vName = "_fld_var_" ++ s ++ "_" ++ (show c)
      let bName = "record_blk_" ++ s
      let fID   = (FieldID s) 
      ir.tables ^%= Map.insertWith (++) t [fID]
@@ -253,7 +254,7 @@ convertValAssigns :: Transformer ()
 convertValAssigns = 
   do assigns <- use $ ast.valAssign
      c <- getNextCounter
-     mainBlock <- convertBlock ("actAssigns_" ++ (show c)) assigns 
+     mainBlock <- convertBlock ("valAssigns_" ++ (show c)) assigns 
      addToEvent Boot mainBlock
 
 convertRules :: Transformer ()
@@ -279,7 +280,7 @@ addToEvent :: Event -> BlockID -> Transformer ()
 addToEvent e b = 
   do let n = eventIDName e 
      ir.events %= Map.insert e n 
-     ir.rules %= Map.insertWith (++) n [b]         
+     ir.rules %= Map.insertWith (flip (++)) n [b]         
 
 convertEExpr :: P.EExpr -> BlockID -> Transformer () 
 convertEExpr (P.EVEvery i) b = convertEvery i b 
@@ -353,7 +354,7 @@ convertCooldown e (Interval i) b =
                                        (Reg rs) 
                                        (Lit (Int i)),
                               If (Reg rg) (Just btID) (Nothing)]
-     let bsName = "rule_" ++ (show n) ++ "_cooldown_bootstrap"
+     let bsName = "rule_" ++ (show n) ++ "_cooldown_init"
      bsID <- addBlock bsName [Store (VarID vName) (Lit (Int 0))]
      addToEvent Boot bsID
      convertEExpr e bcID 
@@ -376,9 +377,10 @@ convertBegins v i b =
                                                      (Reg ru),
                                             If (Reg rc) (Just b) (Nothing),
                                             Store (VarID vName) bgVal ]
-     let bsName = "rule_" ++ (show n) ++ "_begins_bootstrap"
+     let bsName = "rule_" ++ (show n) ++ "_begins_init"
      bsID <- addBlock bsName [Store (VarID vName) (Lit (Bool False))]
      bID <- convertPeriodic "begins_bootstrap" i Now bgID
      addToEvent Boot bsID
+     addToEvent Boot bID
      
  
