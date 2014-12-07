@@ -110,9 +110,40 @@
  *
  * */
 
-//unsure if defining a bool type will be neccessary
-//typedef enum { false, true } bool;
+/*** Will need to be built dynamically***/
+#define table_number 1;       //given by SNC
+#define field_zero_number 8;  //given by SNC for table #
+#define field_one_number 8;   //given by SNC for table #
+//then build tables based on fields and types
+//the rest of this header file is an example to work 
+//with all of the sensors that we have picked
 
+struct table_item{
+  char[1024] name;
+  float data;
+};
+
+/*** Will need to be built dynamically for each table***/
+struct table_zero {
+  table_item[field_zero_number] items;
+};
+
+/*void initialize_table(&table, int table_size) {
+  //one char for column value, one '\0', 
+  //four char for float(max), two '/0' to signify the end
+  table.buffer.init(8*buf_length); 
+}
+
+struct function {
+  //function pointer
+  void(*func)(void);
+  int timeout = -1; //no timeout
+};
+
+struct function_queue {
+  //this is intended to be a list of function pointers
+  LinkedList<void(*)(void)> data; 
+};
 
 // Macro shenangiangs to a unique ID for a gather op at compiler time
 //   a bit of research makes me think this isn't feasible.  
@@ -146,6 +177,7 @@ time_t get_time();
 typedef enum {RISING_EDGE, FALLING_EDGE} trigger;
 
 // Call a function when an interrupt with a particular number is triggered. 
+#define BUTTON 15
 void schedule_interrupt(void (*x)(void), int int_num, trigger trigger_type);
 
 // ------------ Local Data OPs -------------
@@ -153,17 +185,35 @@ void schedule_interrupt(void (*x)(void), int int_num, trigger trigger_type);
 // Returns an integer unique to a specific node 
 int get_node_id();
 
+// ------------ Lux Sensor OPs, based off of Adafruit TSL2561 -------------
+
+// This sensor returns light, IR light, and visible light in SI lux units
+// Will need to link in Adafruit library for this sensor
+// Should be called in setup() on a global sensor variable
+void setup_TSL2561();
+
+// Returns light in SI lux units
+float get_light();
+
+// Returns broadband in SI lux units
+float get_broadband_light();
+
+// Returns IR in SI lux units
+float get_ir_light();
+
+
 // ------------ Temperature Sensor OPs -------------
 
 // Returns the temperature in Celsius
 // Pinoccio has onboard temperature sensor, we'll use that
+
+//returns temperature
 float get_temperature();
 
-// ------------ Brightness Sensor OPs -------------
+// ------------ Battery Power Sensor OPs -------------
 
-// Returns the current relative brightness
-// Don't have a sensor for this yet, so returning state of charge instead
-float get_brightness();
+// Returns the current battery status
+float get_battery_status();
 
 // ------------ LED Output OPs -------------
 
@@ -199,10 +249,17 @@ int get_led();
  *   table - the table number 
  *
  *   takes all the values in the buffer and writes them as a single row to
- *   the table. Then it calls flush_buffer()
+ *   the table. Then it calls flush_buffer().
+ *    T: have broadcast over WiFi/up to cloud, and to local storage
+ *
  */
 
 void store_value(int table, int val_num, void * buf, size_t buf_len); 
+//make storing data conform to the data_piece struct
+//which is basically just a key-value pair
+//easy to make into JSON later
+//Currently unneccessary, left as a reminder this might be useful
+//void store_value(int table, int val_num, data_piece &dp);
 void flush_buffer(int table);
 void finish_record(int table); 
 
@@ -224,6 +281,4 @@ data record_info = {
   id::Int,
   data_type::String,
   length::Int
-}
-
-*/ 
+}*/
