@@ -1,9 +1,11 @@
+-- This is another gibberish application but it should type check properly
 
 standard_gather_action := GATHER { 
     SAVE Get_Node_Id() AS node_id, 
     SAVE Get_Time() AS time, 
-    SAVE Get_Temprature() AS temp, 
-    SAVE Get_Brightness() AS light
+    SAVE Get_Temperature() AS temp, 
+    SAVE Get_Brightness() AS light,
+    SAVE led_state AS led
 } INTO Data_Table ;
 
 led_state := false; 
