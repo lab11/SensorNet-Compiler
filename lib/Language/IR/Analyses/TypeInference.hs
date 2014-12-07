@@ -17,8 +17,7 @@ import Data.Maybe
 import Control.Monad.State
 import Control.Monad.Trans (lift) 
 import Control.Lens
-import System.IO.Unsafe
-import Debug.Trace
+-- import Debug.Trace
 
 
 {-
@@ -257,10 +256,12 @@ constrainDirectional a b =
      constrainType b aType 
 
 getCallType :: ExternCall -> Typer (Maybe Type)
-getCallType (ExternCall n) = use $ env . at n
+getCallType (ExternCall n) = use $ env.at n
 
 stringCoerceTypes :: Typer [Type] 
-stringCoerceTypes = filterM canStringCoerce typeUniverse
+stringCoerceTypes = 
+  do ts <- filterM canStringCoerce typeUniverse
+     return (ts ++ [StringT])
 
 canStringCoerce :: Type -> Typer Bool 
 canStringCoerce t = 
@@ -283,7 +284,7 @@ instance Typeable DataID where
   constrainType d t = 
     do dt <- getType d
        let ct = intersect dt t 
-       if ((ct \\ dt) /= [])
+       if ((dt \\ ct) /= [])
        then isModified .= True
        else return ()
        typeMap.at d .= Just ct
@@ -305,7 +306,13 @@ instance Typeable Literal where
   getType (Flt _) = return [FloatT]
   getType (Int _) = return numericTypes
   getType (Bool _) = return [BoolT]
-  constrainType _ _ = return ()
+  constrainType l t = 
+    do lt <- getType l
+       if ((intersect lt t) == [])
+       then error ("Type Mismatch : " ++ (ppShow l) ++
+                   "\n Expected : " ++ (ppShow lt) ++ 
+                   "\n Got : " ++ (ppShow t) ++ "\n")
+       else return ()
 
 instance Typeable Value where 
   getType (Reg r) = getType r
