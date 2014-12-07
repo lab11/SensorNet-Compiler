@@ -50,14 +50,10 @@ typeUniverse = [StringT,IntT,FloatT,VoidT,IntervalT,TimeT,SizeT,BoolT]
 numericTypes :: [Type] 
 numericTypes = [IntT,FloatT]
 
-inferTypes :: Program -> FilePath -> IO (Map DataID [Type]) 
-inferTypes prog file = 
-  do translationUnit <- parseHeaderFile file
-     let fEnv = genFEnv translationUnit 
-     putStrLn . (++ "\n\n\n") . ppShow $ fEnv -- TODO : Remove debug statements 
-     return $ inferProg fEnv prog
+inferTypes :: Program -> Map String Type -> Map DataID [Type]
+inferTypes prog fEnv = inferProg fEnv prog
 
- -- File IO --
+-- File IO --
 
 parseHeaderFile :: FilePath -> IO CTranslUnit
 parseHeaderFile input_file =

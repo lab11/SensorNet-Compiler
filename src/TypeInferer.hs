@@ -10,8 +10,13 @@ import System.IO
 
 main = 
   do args <- getArgs
-     let hf = head args
-     let pf = args !! 1 
-     si <- readFile pf 
-     inferedTypes <- inferTypes ((fromEventBased . progParse . tokenize) si) hf
-     (putStr . ppShow) inferedTypes
+     let hf = args !! 0
+     let pf = args !! 1
+     headers <- parseHeaderFile hf 
+     let funcEnv = genFEnv headers
+     putStrLn $ (ppShow funcEnv) ++ "\n\n"
+     progText <- readFile pf 
+     let prog  = (fromEventBased . progParse . tokenize) progText
+     let types = inferTypes prog funcEnv 
+     putStrLn $ ppShow types
+
