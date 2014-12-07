@@ -354,7 +354,7 @@ convertCooldown e (Interval i) b =
                                        (Reg rs) 
                                        (Lit (Int i)),
                               If (Reg rg) (Just btID) (Nothing)]
-     let bsName = "rule_" ++ (show n) ++ "_cooldown_bootstrap"
+     let bsName = "rule_" ++ (show n) ++ "_cooldown_init"
      bsID <- addBlock bsName [Store (VarID vName) (Lit (Int 0))]
      addToEvent Boot bsID
      convertEExpr e bcID 
@@ -377,9 +377,10 @@ convertBegins v i b =
                                                      (Reg ru),
                                             If (Reg rc) (Just b) (Nothing),
                                             Store (VarID vName) bgVal ]
-     let bsName = "rule_" ++ (show n) ++ "_begins_bootstrap"
+     let bsName = "rule_" ++ (show n) ++ "_begins_init"
      bsID <- addBlock bsName [Store (VarID vName) (Lit (Bool False))]
      bID <- convertPeriodic "begins_bootstrap" i Now bgID
      addToEvent Boot bsID
+     addToEvent Boot bID
      
  
