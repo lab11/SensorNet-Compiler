@@ -22,6 +22,7 @@ library
                      Language.IR,
                      Language.IR.IR,
                      Language.IR.FromEventBased,
+                     Language.IR.ToC,
                      Language.IR.Analyses.TypeInference
   build-depends:     base >= 4.6,
                      array,
@@ -29,6 +30,7 @@ library
                      containers,
                      language-c,
                      haskell-src-exts,
+                     here,
                      mtl >= 2.2.1,
                      lens >= 4.6,
                      time >= 1.5

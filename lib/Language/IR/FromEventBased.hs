@@ -56,7 +56,6 @@ getNextReg =
   do c <- getNextCounter
      return $ RegID ("reg_" ++ (show c))
 
-
 -- Types for the BlockTransformer Monad --
 
 data BlockState = BlockState {
