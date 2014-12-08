@@ -1,0 +1,7 @@
+ON( EVERY 5 mins ){
+    GATHER { 
+        SAVE Node_id() AS id,
+        SAVE Temperature() AS temp,
+	    SAVE Current_time() AS time
+    } INTO Table_1; 
+}	

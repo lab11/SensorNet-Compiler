@@ -1,0 +1,7 @@
+ON ( 5 mins AFTER ( AFTER ( Flow_rate() > 90 ) BEGINS CHECKING EVERY 1 min )) {
+    EXECUTE Gather_sample(); 
+}
+
+-- ON( 5m AFTER((Humidity() > 90) BEGINS WHILE CHECKING EVERY 1m)){ 
+--    EXECUTE Temperature() AS temp; 
+-- }

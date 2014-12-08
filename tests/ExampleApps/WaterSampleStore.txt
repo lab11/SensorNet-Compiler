@@ -1,0 +1,37 @@
+standard_gather_action := GATHER {
+    SAVE Node_Id() AS id,
+    SAVE Humidity() AS humidity, 
+    SAVE Soil_Moisture() AS soil_moisture,
+    SAVE Current_Time() AS time
+} INTO MOISTURE_TABLE;
+
+send_out_of_sample_jars_alert := {
+    SEND foo@bar.com (“Node “ << Node_Id() << 
+     “ missed gathering sample at “ << 
+     get_time() << “.”);
+}
+
+sample_water_action := { 
+    IF(remaining_samples() > 0){
+         EXECUTE sample_water();
+    } ELSE {
+         EXECUTE send_out_of_sample_jars_alert()
+    }
+    IF(remaining_samples() = 0){
+         SEND foo@bar.com (“Node “ << Node_Id() << 
+         “ out of samples, please collect.”);
+    }
+    DO standard_gather_action;
+}
+
+ON( 5m AFTER((Humidity() > 90) BEGINS WHILE CHECKING EVERY 1m)){ 
+    DO sample_water_action; 
+}
+
+ON(EVERY 1h){
+   DO standard_gather_action;
+}
+
+ON(EVERY 1 day){
+   DO sample_water_action;
+}
