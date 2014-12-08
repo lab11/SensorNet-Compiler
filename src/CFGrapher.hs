@@ -9,8 +9,8 @@ import System.IO
 
 {-
 	Outputs dot file (viewable with GraphViz)
-	e.g.	Sensornet-CFGrapher > test.dot
-	    	dot -Tpng test.dot > test.png
+	e.g.	Sensornet-CFGrapher ?.txt > ?.dot
+	    	dot -Tpng ?.dot > ?.png
 -}
 
 main = 
