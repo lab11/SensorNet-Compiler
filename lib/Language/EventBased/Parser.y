@@ -57,9 +57,11 @@ import Control.Lens
   'ON'                        {L.Key L.On} 
   'EVERY'                     {L.Key L.Every}
   'AFTER'                     {L.Key L.After}
-  'BEGINS'                    {L.Key L.Begins}
-  'ENDS'                      {L.Key L.Ends}
+  'AND WHEN'                  {L.Key L.And_When}
+  'BECOMES FALSE'             {L.Key L.Becomes_False}
+  'BECOMES TRUE'              {L.Key L.Becomes_True}
   'PERFORM'                   {L.Key L.Perform} 
+  'WAIT'                      {L.Key L.Wait}
   'WITH COOLDOWN'             {L.Key L.With_Cooldown}
   'WITHIN'                    {L.Key L.Within}
   'GATHER'                    {L.Key L.Gather}
@@ -74,7 +76,8 @@ import Control.Lens
   'AS'                        {L.Key L.As}
   'SET OPTIONS'               {L.Key L.Set_Options}
   'STARTING AT'               {L.Key L.Starting_At}
-  'CHECKING EVERY'            {L.Key L.Checking_Every}
+  'THEN'                      {L.Key L.Then}
+  'CHECK EVERY'               {L.Key L.Check_Every}
   'UPDATE'                    {L.Key L.Update} 
 
   -- Time Keywords
@@ -202,10 +205,11 @@ Eexpr : 'EVERY' Interval                          { EVEvery $2 }
       | Interval 'AFTER' Eexpr                    { EVAfter $1 $3 }
       | 'INTERRUPT' extern                        { EVInterrupt (Extern $2) }
       | Eexpr 'WITH COOLDOWN' Interval            { EVCooldown $1 $3 }
-      | 'AFTER' Vexpr 'BEGINS' 'CHECKING EVERY' Interval
-                                                  { EVBegins $2 $5 }
-      | 'AFTER' Vexpr 'ENDS' 'CHECKING EVERY' Interval
-                                                  { EVEnds $2 $5 }
+      | 'CHECK EVERY' Interval 'AND WHEN' Vexpr 'BECOMES TRUE' 
+                                                  { EVBegins $4 $2 }
+      | 'CHECK EVERY' Interval 'AND WHEN' Vexpr 'BECOMES FALSE' 
+                                                  { EVEnds $4 $2 }
+      | Eexpr 'WAIT' Interval 'THEN'              { EVAfter $3 $1}
       | '(' Eexpr ')'                             { $2 }
 
 
@@ -238,8 +242,8 @@ data EExpr = EVEvery Interval
            | EVAfter Interval EExpr
            | EVInterrupt Extern
            | EVCooldown EExpr Interval
-           | EVBegins VExpr Interval
-           | EVEnds VExpr Interval
+           | EVBegins VExpr Interval 
+           | EVEnds VExpr Interval 
            deriving (Show,Read,Eq,Ord)
 
 data AExpr = AEGather [Record] String 

@@ -64,9 +64,11 @@ tokens :-
   "ON"                        { \ _ s -> (Key On) } 
   "EVERY"                     { \ _ s -> (Key Every) }
   "AFTER"                     { \ _ s -> (Key After) }
-  "BEGINS"                    { \ _ s -> (Key Begins) }
-  "ENDS"                      { \ _ s -> (Key Ends) }
+  "AND" $white+ "WHEN"        { \ _ s -> (Key And_When) }
+  "BECOMES" $white+ "FALSE"   { \ _ s -> (Key Becomes_False) }
+  "BECOMES" $white+ "TRUE"    { \ _ s -> (Key Becomes_True) }
   "PERFORM"                   { \ _ s -> (Key Perform) } 
+  "WAIT"                      { \ _ s -> (Key Wait) }
   "WITH" $white+ "COOLDOWN"   { \ _ s -> (Key With_Cooldown) }
   "WITHIN"                    { \ _ s -> (Key Within) }
   "INTERRUPT"                 { \ _ s -> (Key Interrupt) }
@@ -80,8 +82,9 @@ tokens :-
   "INTO"                      { \ _ s -> (Key Into) }
   "AS"                        { \ _ s -> (Key As) }
   "SET" $white+ "OPTIONS"     { \ _ s -> (Key Set_Options) }
-  "CHECKING" $white+ "EVERY"  { \ _ s -> (Key Checking_Every) }
+  "CHECK" $white+ "EVERY"     { \ _ s -> (Key Check_Every) }
   "STARTING" $white+ "AT"     { \ _ s -> (Key Starting_At) }
+  "THEN"                      { \ _ s -> (Key Then) }
   "UPDATE"                    { \ _ s -> (Key Update) } 
 
   -- Time Keywords
@@ -186,9 +189,11 @@ data FlowControl = OpParen
 data Keyword = On 	
         	   | Every 
         	   | After
-        	   | Begins
-        	   | Ends
+             | And_When
+             | Becomes_False
+             | Becomes_True
         	   | Perform
+             | Wait
         	   | With_Cooldown
         	   | Within
         	   | Gather 
@@ -202,7 +207,8 @@ data Keyword = On
         	   | As
         	   | Set_Options
              | Starting_At
-             | Checking_Every
+             | Then
+             | Check_Every
              | Update
              | Interrupt
         	   deriving(Eq,Show,Read)
