@@ -102,16 +102,30 @@ instance ToCVal Literal where
   toCVal (Bool True) = "((bool_t) 0)" 
   toCVal (Bool False) = "((bool_t) 1)" 
 
-{-
 class ToCBufLen a where 
   toCBufLen :: a -> Generator String 
 
 instance ToCBufLen Value where
-  toCBufLen  
+  toCBufLen (Reg r) = toCBufLen r
+  toCBufLen (Val v) = toCBufLen v
+  toCBufLen (Lit l) = toCBufLen l
 
-valToBufLen :: Value -> Generator String 
-valToCStr (Reg (RegID r)) = r 
-valToCStr (Var (VarID v)) = v
-valToCStr (Lit l)         = litToStr l
+instance ToCBufLen Literal where
+  toCBufLen (Str s)  = 
+    do sBuf <- toCBufLen StringT
+       return $ "(" ++ sBUf ++ "* (" ++ (show $ 1 + (List.length s)) ++ "))"
+  toCBufLen (Flt _)  = toCBufLen FloatT
+  toCBufLen (Int _)  = toCBufLen IntT
+  toCBufLen (Bool _) = toCBufLen BoolT
 
--}
+instance ToCBufLen Type where
+  toCBufLen StringT     = return "sizeof(char)"
+  toCBufLen IntT        = return "sizeof(int)"
+  toCBufLen FLoatT      = return "sizeof(float)"
+  toCBufLen VoidT       = error "Tried to get the size of a void variable" 
+  toCBufLen IntervalT   = return "sizeof(interval_t)" 
+  toCBufLen TimeT       = return "sizeof(time_t)" 
+  toCBufLen BoolT       = return "sizeof(bool_t)" 
+  toCBufLen SizeT       = return "sizeof(size_t)"
+  toCBufLen (FuncT _ _) = error "Tried to get size of a function" 
+
