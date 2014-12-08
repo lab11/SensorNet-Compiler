@@ -19,7 +19,7 @@ import Data.Maybe
 import Control.Monad.State
 import Control.Monad.Trans (lift) 
 import Control.Lens
-import Language.IR.Analyses.TypeInference
+import Language.IR.Analyses.TypeInference hiding (getType)
 
 toC :: Map String Type -> Map DataID Type -> Program -> String
 toC fEnv tEnv prog = error "Unimplemented"
@@ -29,7 +29,9 @@ data Env = Env {
   _d :: Map DataID Type,
   _p :: Program,
   _output :: Map String [String],  -- Map of Function Names to their contents
-  _semCounter :: Int
+  _global :: [String],
+  _semCounter :: Int,
+  _concatCounter :: Int
 }
 
 onto i = (at i).(non [])  
@@ -53,6 +55,7 @@ convertBlock (BlockID b) il =
   do code <- mapM convertInst il 
      output.onto b <>= concat code 
 
+
 --- START OF convertInst
 convertInst :: Instruction -> Generator [String]
 
@@ -70,50 +73,112 @@ convertInst (SimultAt Not_Waiting (Rel (Interval s)) bl) =
   mapM getBlock bl
   where getBlock (BlockID b) = return [i|schedule_absolute(&${b},${s});|]
   
-convertInst (Store (VarID n) v) = 
-  return [[i|${n} = ${toCVal v};|]]
+convertInst (Store (VarID n) v) =
+  do t <- getType v
+     case t of 
+        StringT -> return [[i|strncpy(${toCVal v},${n},1024);|]]
+        _       -> return [[i|${n} = ${toCVal v};|]]
 
 convertInst (Send (Email e) v) = 
   return [[i|send_email(${show e},${toCVal v},1024);|]]
 
-{-
 convertInst (Gather t fl) = 
-  do tableNum <- uses program.tables $ Map.lookupIndex t
-     flush <- [[i|flush_buffer(${tableNum});|]]
-     collects <- mapM (getStore tableNum)
+  do tableNum <- uses (p.tables) $ fromJust . (Map.lookupIndex t)
+     let flush = [[i|flush_buffer(${tableNum});|]]
+     collects <- mapM (getStore tableNum) fl
+     let send = [[i|finish_record(${tableNum});|]]
+     return $ flush ++ collects ++ send 
   where getStore n (f,v) = 
-          do fNum <- uses program.tables.at(t). $ List.elemIndex f
-             return [[i|store_value(n,
--}
+          do tList <- use $ p.tables.at(t) 
+             let fNum = (fromJust .(elemIndex f) . fromJust) tList
+             bufL <- toCBufLen v
+             return [i|store_value(${n},${fNum},&${toCVal v},${bufL}|]
+
+convertInst (Call s (ExternCall e) vl) = 
+  do sts <- toCSto s
+     let vlt = (concat . (intersperse ",") . (map toCVal)) vl
+     return [[i|${sts} ${e}(${vlt});|]]
+
+convertInst (If v mb1 mb2) =
+  do let b1 = case mb1 of 
+                Just (BlockID b1id) -> [i| ${b1id}();|]
+                Nothing -> ""
+     let b2 = case mb2 of 
+                Just (BlockID b2id) -> [i| ${b2id}();|]
+                Nothing -> ""
+     let vs = toCVal v 
+     return [[i|if(${vs}){|],b1,"} else {",b2,"}"]
+
+convertInst (BinaryOp s bo v1 v2) = 
+  do sts <- toCSto s 
+     let v1s = toCVal v1 
+     let v2s = toCVal v2 
+     let bs = toCBinOp bo
+     return [[i|${sts}((${v1s})${bs}(${v2s}));|]]
+
+convertInst (UnaryOp s Logical_Not v) =
+  do sts <- toCSto s 
+     return [[i|${sts}(!(${toCVal v});|]]
+
+convertInst (Concat s vl) = 
+  do sts <- toCSto s
+     cnt <- concatCounter %%= (\ n -> (n,n + 1))
+     let init = [[i|char _b${cnt}[1024];|],
+                 [i|char * _t${cnt} = _b${cnt};|]]
+     concats <- mapM (addSegment cnt) vl 
+     let cleanup = [[i|_t${cnt} = '\0';|],
+                    [i|${sts} _b${cnt};|]]
+     return $ init ++ concats ++ cleanup
+     where addSegment n v = 
+              do t <- getType v
+                 call <- getStringCoerce t 
+                 let h = [i|_t${n}|]
+                 let p = [i|_b${n}|]
+                 return [i|${h} = ${call}(${toCVal v},${h},1024-(${h}- ${p}));|]
+
 --- END OF convertInst
+
+getStringCoerce :: Type -> Generator String 
+getStringCoerce t = 
+  do m <- use f
+     return $ (head . Map.keys . Map.filterWithKey filter) m 
+     where filter k (FuncT StringT (b:_) ) = 
+              ("string_coerce" `isPrefixOf` k) && (b == t)
+           filter _ _ = False 
 
 class ToCVal a where 
   toCVal :: a -> String 
 
 instance ToCVal Value where
-  toCVal (Reg (RegID r)) = r
-  toCVal (Var (VarID v)) = v
-  toCVal (Lit l)         = toCVal l
+  toCVal (Reg r) = toCVal r
+  toCVal (Var v) = toCVal v
+  toCVal (Lit l) = toCVal l
 
 instance ToCVal Literal where 
   toCVal (Str s) = show s 
-  toCVal (Flt f) = show f
+  toCVal (Flt f) = [i|((float) ${show f})|]
   toCVal (Int i) = show i
   toCVal (Bool True) = "((bool_t) 0)" 
   toCVal (Bool False) = "((bool_t) 1)" 
+
+instance ToCVal RegID where 
+  toCVal (RegID r) = r
+
+instance ToCVal VarID where
+  toCVal (VarID v) = v
 
 class ToCBufLen a where 
   toCBufLen :: a -> Generator String 
 
 instance ToCBufLen Value where
   toCBufLen (Reg r) = toCBufLen r
-  toCBufLen (Val v) = toCBufLen v
+  toCBufLen (Var v) = toCBufLen v
   toCBufLen (Lit l) = toCBufLen l
 
 instance ToCBufLen Literal where
   toCBufLen (Str s)  = 
     do sBuf <- toCBufLen StringT
-       return $ "(" ++ sBUf ++ "* (" ++ (show $ 1 + (List.length s)) ++ "))"
+       return $ "(" ++ sBuf ++ "* (" ++ (show $ 1 + (length s)) ++ "))"
   toCBufLen (Flt _)  = toCBufLen FloatT
   toCBufLen (Int _)  = toCBufLen IntT
   toCBufLen (Bool _) = toCBufLen BoolT
@@ -121,7 +186,7 @@ instance ToCBufLen Literal where
 instance ToCBufLen Type where
   toCBufLen StringT     = return "sizeof(char)"
   toCBufLen IntT        = return "sizeof(int)"
-  toCBufLen FLoatT      = return "sizeof(float)"
+  toCBufLen FloatT      = return "sizeof(float)"
   toCBufLen VoidT       = error "Tried to get the size of a void variable" 
   toCBufLen IntervalT   = return "sizeof(interval_t)" 
   toCBufLen TimeT       = return "sizeof(time_t)" 
@@ -129,3 +194,92 @@ instance ToCBufLen Type where
   toCBufLen SizeT       = return "sizeof(size_t)"
   toCBufLen (FuncT _ _) = error "Tried to get size of a function" 
 
+instance ToCBufLen DataID where
+  toCBufLen dat = 
+    do t <- use $ d.at dat
+       case t of 
+          Just StringT -> do sn <- toCBufLen StringT 
+                             return $ "(" ++ sn ++ " * 1024)" 
+          Just t -> toCBufLen t
+          Nothing -> error "Trying to get type of var with no type specified"
+
+instance ToCBufLen VarID where 
+  toCBufLen v = toCBufLen (VarName v) 
+
+instance ToCBufLen RegID where
+  toCBufLen r = toCBufLen (RegName r) 
+
+class ToCType a where
+  toCType :: a -> Generator String
+
+instance ToCType Type where 
+  toCType StringT = return "char" 
+  toCType IntT = return "int" 
+  toCType FloatT = return "float" 
+  toCType VoidT = return "void" 
+  toCType IntervalT = return "interval_t" 
+  toCType TimeT = return "time_t" 
+  toCType BoolT = return "bool_t" 
+  toCType SizeT = return "size_t" 
+  toCType (FuncT _ _) = error "Can't generate type for function types"
+
+instance ToCType DataID where
+  toCType did = 
+    do t <- use $ d.at did
+       case t of 
+          Just ty -> toCType ty
+          Nothing -> error $ "no type infor available for " ++ (show did)
+
+instance ToCType RegID where
+  toCType r = toCType (RegName r)
+
+instance ToCType VarID where 
+  toCType v = toCType (VarName v)
+
+toCSto :: StoReg -> Generator String
+toCSto Null = return "" 
+toCSto (Register r) =
+  do ts <- toCType r 
+     let name = toCVal r 
+     return [i|${ts} ${name} = |] 
+  
+toCBinOp :: BinOp -> String 
+toCBinOP Logical_And = "&&"
+toCBinOp Logical_Or	 = "||"	
+toCBinOp Logical_Xor = "^"
+toCBinOp Structural_Equality = "=="
+toCBinOp Greater_Than = ">"
+toCBinOp Greater_Than_Equals = ">=" 
+toCBinOp Less_Than = "<"
+toCBinOp Less_Than_Equals = "<=" 
+toCBinOp String_Append = error "Shouldn't be called here"  
+toCBinOp Add = "+"
+toCBinOp Subtract = "-" 
+toCBinOp Multiply = "*" 
+toCBinOp Divide = "/"
+
+class CanGetType a where
+  getType :: a -> Generator Type
+
+instance CanGetType DataID where
+  getType p = use $ d.at p.(non (error "foo"))
+
+instance CanGetType VarID where 
+  getType v = getType (VarName v) 
+
+instance CanGetType RegID where 
+  getType r = getType (RegName r) 
+
+instance CanGetType FieldID where 
+  getType f = getType (FldName f) 
+
+instance CanGetType Literal where 
+  getType (Str _) = return StringT
+  getType (Flt _) = return FloatT
+  getType (Int _) = return IntT
+  getType (Bool _) = return BoolT
+
+instance CanGetType Value where
+  getType (Reg r) = getType r
+  getType (Var v) = getType v
+  getType (Lit l) = getType l

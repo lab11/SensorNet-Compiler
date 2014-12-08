@@ -240,7 +240,7 @@ getCallType (ExternCall n) = use $ env.at n
 stringCoerceTypes :: Typer [Type] 
 stringCoerceTypes = 
   do ts <- filterM canStringCoerce typeUniverse
-     return (ts ++ [StringT])
+     return ts
 
 canStringCoerce :: Type -> Typer Bool 
 canStringCoerce t = 
