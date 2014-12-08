@@ -71,10 +71,10 @@ convertInst (SimultAt Not_Waiting (Rel (Interval s)) bl) =
   where getBlock (BlockID b) = return [i|schedule_absolute(&${b},${s});|]
   
 convertInst (Store (VarID n) v) = 
-  return [[i|${n} = ${valToCStr v};|]]
+  return [[i|${n} = ${toCVal v};|]]
 
 convertInst (Send (Email e) v) = 
-  return [[i|send_email(${show e},${valToCStr v},1024);|]]
+  return [[i|send_email(${show e},${toCVal v},1024);|]]
 
 {-
 convertInst (Gather t fl) = 
@@ -85,24 +85,33 @@ convertInst (Gather t fl) =
           do fNum <- uses program.tables.at(t). $ List.elemIndex f
              return [[i|store_value(n,
 -}
-
 --- END OF convertInst
 
-valToCStr :: Value -> String 
-valToCStr (Reg (RegID r)) = r
-valToCStr (Var (VarID v)) = v
-valToCStr (Lit l)         = litToCStr l
+class ToCVal a where 
+  toCVal :: a -> String 
 
-litToCStr :: Literal -> String 
-litToCStr (Str s) = show s 
-litToCStr (Flt f) = show f
-litToCStr (Int i) = show i
-litToCStr (Bool True) = "0" 
-litToCStr (Bool False) = "1" 
+instance ToCVal Value where
+  toCVal (Reg (RegID r)) = r
+  toCVal (Var (VarID v)) = v
+  toCVal (Lit l)         = toCVal l
+
+instance ToCVal Literal where 
+  toCVal (Str s) = show s 
+  toCVal (Flt f) = show f
+  toCVal (Int i) = show i
+  toCVal (Bool True) = "((bool_t) 0)" 
+  toCVal (Bool False) = "((bool_t) 1)" 
 
 {-
+class ToCBufLen a where 
+  toCBufLen :: a -> Generator String 
+
+instance ToCBufLen Value where
+  toCBufLen  
+
 valToBufLen :: Value -> Generator String 
 valToCStr (Reg (RegID r)) = r 
 valToCStr (Var (VarID v)) = v
 valToCStr (Lit l)         = litToStr l
+
 -}

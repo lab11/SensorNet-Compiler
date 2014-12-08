@@ -33,23 +33,6 @@ data Instruction = SimultAt WaitType Time [BlockID]
 deriving (Show,Read,Eq,Ord)
 -}
 
-data Type = StringT
-          | IntT
-          | FloatT 
-          | VoidT
-          | IntervalT 
-          | TimeT
-          | SizeT
-          | BoolT
-          | FuncT Type [Type]
-          deriving (Eq,Show,Read,Ord)
-
-typeUniverse :: [Type]
-typeUniverse = [StringT,IntT,FloatT,VoidT,IntervalT,TimeT,SizeT,BoolT]
-
-numericTypes :: [Type] 
-numericTypes = [IntT,FloatT]
-
 inferTypes :: Program -> Map String Type -> Map DataID [Type]
 inferTypes prog fEnv = inferProg fEnv prog
 
