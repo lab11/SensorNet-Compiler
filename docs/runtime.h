@@ -134,10 +134,8 @@ time_t Get_Time();
 
 // ------------ Timer OPs -------------
 
-typedef enum {RISING_EDGE, FALLING_EDGE} trigger;
-
 // Call a function when an interrupt with a particular number is triggered. 
-void schedule_interrupt(void (*x)(void), int int_num, trigger trigger_type);
+void schedule_interrupt(void (*x)(void), int int_num);
 
 // ------------ Local Data OPs -------------
 
