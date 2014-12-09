@@ -25,6 +25,8 @@ ON( EVERY 1 day ){
     };
 } 
 
-ON ( 5 mins AFTER ( AFTER ( Flow_rate() > 90 ) BEGINS CHECKING EVERY 1 min )) {
+-- ON ( 5 mins AFTER ( AFTER ( Flow_rate() > 90 ) BEGINS CHECKING EVERY 1 min ))  <-- Original
+
+ON (( CHECK EVERY 1 min AND WHEN ( Flow_rate() > 90 ) BECOMES TRUE) WAIT 5 mins THEN) {
     EXECUTE Gather_sample(); 
 }
