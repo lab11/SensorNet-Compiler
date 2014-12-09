@@ -1,8 +1,4 @@
 /*	By Colin Szechy
- *	This references the Arduino Time library from 
- *	http://playground.arduino.cc/Code/Time
- *	not a standard Arduino library - needs to be provided 
- *	or - can use uptime.seconds() from Pinoccio library
  */
 
 //default Scout libraries - from the "Bootstrap" example
@@ -13,7 +9,7 @@
 #include <bitlash.h>
 #include <lwm.h>
 #include <js0n.h>
-#include "sensor.h"
+#include "runtime.h"
 
 #include <SleepHandler.h>
 //from http://github.com/ivanseidel/LinkedList
@@ -26,9 +22,10 @@
 
 //function table global
 LinkedList<function> function_queue;// = LinkedList<function>();
+tablezero table_zero;
 
 //one-to-one correspondence between buffers and table #'s
-ByteBuffer[table_number] buffers;
+ByteBuffer buffers [table_number];
 
 
 //	all-important setup 
@@ -139,63 +136,99 @@ data_piece parse_data_piece_buffer(int table) {
   //four char for float(max), two '/0' to signify the end
 }*/
 
+
+
 void store_value(int table, int val_num, void *buff, size_t buf_lens){
   //one char for column value, one '\0', 
   //four char for float(max), two '/0' to signify the end
 
  	//place val_num/column - look up string later, when data sent away
-  buffer[table].put(val_num);
-	//place value that's neccessary
-	if(buf_lens == 4) {
-		buffer[table].putFloat(buff);
-		buffer[table].put(2);	//TRUE for float, four bytes/32 bits
+  buffers[table].put(val_num);
+	//place value that's neccessary by checking first value in buff
+	if(*((char*)buff) == 'f') {				//float
+                //++buff;
+		buffers[table].putFloat(*((float*)(buff+1)));
+		buffers[table].put(3);	//four bytes/32 bits - a float
 	}
-	else {
-		buffer[table].put(buff);
-		buffer[table].put(1);	//false for just one byte/8 bits
+	else if(*((char*)buff) == 's') {		//string
+		//put it on in reverse order so easy to read back
+		for(char *b = (char*)buff + buf_lens; b >= buff; --b)
+			buffers[table].put(*((char*)buff));
+		/*while(*buff) {
+			buffers[table].put(*buff);
+			++buff;
+		}*/
+		buffers[table].put(2);	//signifying a string in reverse
 	}
+	else {											//char
+		buffers[table].put(*(char*)buff);
+		buffers[table].put(1);	//just one byte/8 bits - a char
+        }
 	//place end char
-	buffer[table].put('\0');
+	buffers[table].put('\0');
 
 }
 
 //pops most recent data piece off of the table's buffer into table, so in reverse
 void buffer_pop(int table) {
 	//pop off null character
-	buffer[table].getFromBack();
+	buffers[table].getFromBack();
 	//is it a float next?
-	int f = buffer[table].getFromBack();
+	int f = buffers[table].getFromBack();
 	float d = 0;
-	if(f == 2)
-		data = buffer[table].getFloatFromBack();
-	else
-		data = buffer[table].getFromBack();
+        int c = 0;
+        char s[1024];
+	//string
+	if(f == 3) {
+		char gotten = buffers[table].getFromBack();
+                int j = 0;
+		while(gotten != '\0') {
+			s[j] = gotten;
+			gotten = buffers[table].getFromBack();
+                        ++j;
+		}
+	}
+	//float
+	else if(f == 2) {
+		d = buffers[table].getFloatFromBack();
+	}
+	//just one char
+	else {
+		c = buffers[table].getFromBack();
+	}
 
 	//get column number
-	int col_num = buffer[table].getFromBack();
+	int col_num = buffers[table].getFromBack();
 
 	/***WILL NEED TO BE GENERATED DYNAMICALLY***/
 	//case statement on table #
 	switch(table) {
-		case: 0
-			table_zero.items[col_num].data = d;
+		case 0: {
+                        table_zero.items[col_num].type = f;
+                        
+                        if(f == 3)
+                          table_zero.items[col_num].s = s;
+                        else if(f==2)
+                          table_zero.items[col_num].f = d;
+                        else
+                          table_zero.items[col_num].i = i;
+                }
 		break;
-		/*case: 1
+		/*case 1:
 			table_one.items[col_num].data = d;
 		break;*/
 		default:
+    break;
 			//do nothing
 	}
-
-	return dp;
 }
 
 void flush_buffer(int table) {
-	buffer[table].clear();
+	buffers[table].clear();
 }
 
 void finish_record(int table) {
-	while(buffer[table].getSize() != buffer[table].getCapacity())
+	while(buffers[table].getSize() != buffers[table].getCapacity())
 		buffer_pop(table);
 	flush_buffer(table);
 }

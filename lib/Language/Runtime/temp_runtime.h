@@ -1,1 +1,0 @@
-typedef unsigned long long int time_t;

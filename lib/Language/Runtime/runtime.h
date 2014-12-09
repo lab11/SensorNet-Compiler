@@ -111,28 +111,35 @@
  * */
 
 /*** Will need to be built dynamically***/
-#define table_number 1;       //given by SNC
-#define field_zero_number 8;  //given by SNC for table #
-#define field_one_number 8;   //given by SNC for table #
+#define table_number 1          //given by SNC
+#define field_zero_number 8    //given by SNC for table #
+#define field_one_number 8     //given by SNC for table #
 //then build tables based on fields and types
 //the rest of this header file is an example to work 
 //with all of the sensors that we have picked
 
 struct table_item{
-  char[1024] name;
-  float data;
+  char name [1024];
+  char s [1024];
+  float f;
+  int i;
+  int type = 0;
+  //3 = string
+  //2 = float
+  //1 = int
+  //0 = not written to
 };
 
 /*** Will need to be built dynamically for each table***/
-struct table_zero {
-  table_item[field_zero_number] items;
+struct tablezero {
+  table_item items [field_zero_number];
 };
 
 /*void initialize_table(&table, int table_size) {
   //one char for column value, one '\0', 
   //four char for float(max), two '/0' to signify the end
   table.buffer.init(8*buf_length); 
-}
+}*/
 
 struct function {
   //function pointer
@@ -140,10 +147,10 @@ struct function {
   int timeout = -1; //no timeout
 };
 
-struct function_queue {
+/*struct function_queue {
   //this is intended to be a list of function pointers
   LinkedList<void(*)(void)> data; 
-};
+};*/
 
 // Macro shenangiangs to a unique ID for a gather op at compiler time
 //   a bit of research makes me think this isn't feasible.  
