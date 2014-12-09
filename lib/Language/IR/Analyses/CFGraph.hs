@@ -39,6 +39,17 @@ getMap prog = [(c Map.! (eID (fst d)), c Map.! (bID e), pack "") | d <- a, e<-sn
 				b = Map.toList (getBlockMap prog)
 				c = getIDs prog
 
+blockProfuseCheck prog = filter (not . null) [esp c d a | c<-b, d<-b, c/=d]
+	where
+		a = graphify prog
+		b = findLoops (a)
+
+graphify :: Program -> Gr Text Text
+graphify prog = mkGraph [(snd a, pack (fst a)) | a<-(Map.toList (getIDs prog))] (getMap prog)
+
+findLoops :: Gr a b -> [Node]
+findLoops a = [b | b <- nodes a, b `elem` (suc a b) ]
+
 params :: GraphvizParams n Text Text () Text
 params = nonClusteredParams { globalAttributes = ga, fmtNode = fn, fmtEdge = fe }
   where
@@ -47,9 +58,11 @@ params = nonClusteredParams { globalAttributes = ga, fmtNode = fn, fmtEdge = fe 
     fn (n,l) = [(Label . StrLabel) l]
     fe (f,t,l) = [(Label . StrLabel) l]
 
-graphify :: Program -> Gr Text Text
-graphify prog = mkGraph [(snd a, pack (fst a)) | a<-(Map.toList (getIDs prog))] (getMap prog)
-
 visualize = graphToDot params
 
 dotify prog = putStr $ unpack $ renderDot $ toDot (visualize (graphify prog))
+
+profusify prog = putStr ("Nodes: " ++ b ++ (if (null a) then "\nPASS\n" else "\nERROR - Paths between loops: " ++ a ++ "\n"))
+	where
+		a = show (blockProfuseCheck prog)
+		b = show (labNodes (graphify prog))
