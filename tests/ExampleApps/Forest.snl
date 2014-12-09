@@ -2,6 +2,6 @@
 delay := 1; -- Seconds
 take-picture := EXECUTE Take_Picture(delay);
 
-ON(INTERRUPT Motion_Detected){
+ON(INTERRUPT Motion_Detected WITH COOLDOWN 5 mins){
   DO take-picture;
 }
