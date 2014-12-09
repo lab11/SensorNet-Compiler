@@ -1,0 +1,19 @@
+
+delay := 1; -- Seconds
+take-picture := EXECUTE Take_Picture(delay);
+
+ON(INTERRUPT Motion_Detected WITH COOLDOWN 5 mins){
+  DO take-picture;
+}
+
+gather_weather_data := GATHER { 
+  SAVE Get_Node_Id() AS nodeid, 
+  SAVE Get_Time() AS time, 
+  SAVE Get_Temperature() AS temp, 
+  SAVE Get_Pressure() AS pressure, 
+  SAVE Get_Humidity() AS humidity
+} INTO Weather_Table; 
+
+ON(EVERY 1 hour){
+  DO gather_weather_data; 
+} 

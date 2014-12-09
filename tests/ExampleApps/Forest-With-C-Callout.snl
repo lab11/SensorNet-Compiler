@@ -31,11 +31,8 @@ ON(EVERY 1 hour){
   -- If it's likely to be snowing (using a complex heuristic we wrote in C)
   -- take a picture so that we can record how much has happened. 
   IF(Is_Snowing(Get_Temperature(),Get_Pressure(),Get_Humidity())){
-    EXECUTE Set_Motion_Threshold(50);
     DO take-picture; 
-  } ELSE {
-    EXECUTE Set_Motion_Threshold(10); 
-  };
+  }; 
 }
 
 -- Sample more often if it's a storm.

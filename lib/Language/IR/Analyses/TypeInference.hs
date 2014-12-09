@@ -166,7 +166,7 @@ inferInst (Call s e p) =
         Just (FuncT rt pt) -> 
           do constrainType s [rt] 
              mapM_ (\ (v,t)-> constrainType v [t]) (zip p pt) 
-        _ -> return ()
+        _ -> error $ "Fucntion " ++ (show e) ++ " not found in type data."
 
 inferInst (Concat s vl) = 
   do constrainType s [StringT]
