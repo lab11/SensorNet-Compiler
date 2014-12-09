@@ -1,0 +1,7 @@
+
+delay := 1; -- Seconds
+take-picture := EXECUTE Take_Picture(delay);
+
+ON(INTERRUPT Motion_Detected){
+  DO take-picture;
+}

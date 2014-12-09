@@ -16,6 +16,8 @@ bool Other_Function(const int foo,
                     const bool stuff); 
 char * Test_Set(float foo, char * buf, size_t buflen); 
 
+void Take_Picture(float delay);
+
 char * string_coerce_str(const char *str , char * buf, size_t buflen);
 char * string_coerce_int(const int foo, char * buf, size_t buflen);  
 char * string_coerce_bool(const bool foo, char * buf, size_t buflen);  

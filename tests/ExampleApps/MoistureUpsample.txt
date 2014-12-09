@@ -1,0 +1,17 @@
+standard_gather_action := GATHER {
+    SAVE Node_Id() AS id,
+    SAVE Humidity() AS humidity, 
+    SAVE Soil_Moisture() AS soil_moisture,
+    SAVE Current_Time() AS time
+} INTO Moisture_Table; 
+
+ON( EVERY 5 mins ) {
+    IF ( Humidity() > 90) { 
+        DO standard_gather_action;
+        SEND foo@bar.com "It's Raining";
+    };
+}
+
+ON ( EVERY 1 hour ) { 
+    DO standard_gather_action; 
+}
