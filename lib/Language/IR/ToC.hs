@@ -59,7 +59,7 @@ convertHeader =
      let h = map genHeader (Map.keys o)
      global <>= [[i| // Header Declarations |]]
      global <>= h
-     global <>= ["\n"]
+     global <>= [""]
      where genHeader s = [i|void ${s}();|]
 
 convertGlobals :: Generator ()
@@ -69,7 +69,7 @@ convertGlobals =
                     ((Map.elems . (Map.mapMaybeWithKey filterGlobals)) dat)
      global <>= [[i| // Global Variables |]]
      global <>= allocs
-     global <>= ["\n"]
+     global <>= [""]
      where filterGlobals (VarName d) _ = Just d
            filterGlobals _           _ = Nothing 
            generateDecl gv@(VarID v)   = 
