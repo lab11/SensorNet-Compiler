@@ -55,6 +55,9 @@ convertBlock (BlockID b) il =
   do code <- mapM convertInst il 
      output.onto b <>= concat code 
 
+convertGlobals :: Generator ()
+convertGlobals = 
+  do  
 
 --- START OF convertInst
 convertInst :: Instruction -> Generator [String]
@@ -184,15 +187,9 @@ instance ToCBufLen Literal where
   toCBufLen (Bool _) = toCBufLen BoolT
 
 instance ToCBufLen Type where
-  toCBufLen StringT     = return "sizeof(char)"
-  toCBufLen IntT        = return "sizeof(int)"
-  toCBufLen FloatT      = return "sizeof(float)"
   toCBufLen VoidT       = error "Tried to get the size of a void variable" 
-  toCBufLen IntervalT   = return "sizeof(interval_t)" 
-  toCBufLen TimeT       = return "sizeof(time_t)" 
-  toCBufLen BoolT       = return "sizeof(bool_t)" 
-  toCBufLen SizeT       = return "sizeof(size_t)"
   toCBufLen (FuncT _ _) = error "Tried to get size of a function" 
+  toCBufLen t           = return [i|sizeof(${toCType t})|]
 
 instance ToCBufLen DataID where
   toCBufLen dat = 
@@ -213,14 +210,14 @@ class ToCType a where
   toCType :: a -> Generator String
 
 instance ToCType Type where 
-  toCType StringT = return "char" 
-  toCType IntT = return "int" 
-  toCType FloatT = return "float" 
-  toCType VoidT = return "void" 
-  toCType IntervalT = return "interval_t" 
-  toCType TimeT = return "time_t" 
-  toCType BoolT = return "bool_t" 
-  toCType SizeT = return "size_t" 
+  toCType StringT     = return "char" 
+  toCType IntT        = return "int" 
+  toCType FloatT      = return "float" 
+  toCType VoidT       = return "void" 
+  toCType IntervalT   = return "interval_t" 
+  toCType TimeT       = return "time_t" 
+  toCType BoolT       = return "bool" 
+  toCType SizeT       = return "size_t" 
   toCType (FuncT _ _) = error "Can't generate type for function types"
 
 instance ToCType DataID where
@@ -228,7 +225,7 @@ instance ToCType DataID where
     do t <- use $ d.at did
        case t of 
           Just ty -> toCType ty
-          Nothing -> error $ "no type infor available for " ++ (show did)
+          Nothing -> error $ "no type info available for " ++ (show did)
 
 instance ToCType RegID where
   toCType r = toCType (RegName r)
@@ -239,9 +236,12 @@ instance ToCType VarID where
 toCSto :: StoReg -> Generator String
 toCSto Null = return "" 
 toCSto (Register r) =
-  do ts <- toCType r 
-     let name = toCVal r 
-     return [i|${ts} ${name} = |] 
+  do t <- getType r
+     ts <- toCType t 
+     let name = toCVal r
+     case t of 
+       VoidT -> return ""
+       _     -> return [i|${ts} ${name} = |] 
   
 toCBinOp :: BinOp -> String 
 toCBinOP Logical_And = "&&"
