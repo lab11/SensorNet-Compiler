@@ -8,6 +8,8 @@ time_t Get_Time();
 int Get_Node_Id();
 float Get_Temperature();
 float Get_Brightness();
+float Get_Pressure();
+float Get_Humidity();
 int Set_Led(const bool state); 
 int Get_Led();
 void Print_Message(const char* message);
@@ -16,6 +18,13 @@ bool Other_Function(const int foo,
                     const bool stuff); 
 char * Test_Set(float foo, char * buf, size_t buflen); 
 
+void Take_Picture(float delay);
+int  Film_Remaining(float delay); 
+bool Is_Snowing(float temp,float pressure,float humidity);
+
+void Set_Motion_Threshold(float trigger_level);
+
+char * string_coerce_str(const char *str , char * buf, size_t buflen);
 char * string_coerce_int(const int foo, char * buf, size_t buflen);  
 char * string_coerce_bool(const bool foo, char * buf, size_t buflen);  
 char * string_coerce_float(const float foo, char * buf, size_t buflen);  

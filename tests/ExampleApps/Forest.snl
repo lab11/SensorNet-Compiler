@@ -1,0 +1,46 @@
+
+gather_weather_data := GATHER { 
+  SAVE Get_Node_Id() AS nodeid, 
+  SAVE Get_Time() AS time, 
+  SAVE Get_Temperature() AS temp, 
+  SAVE Get_Pressure() AS pressure, 
+  SAVE Get_Humidity() AS humidity
+} INTO Weather_Table; 
+
+delay := 1; -- Seconds
+
+take-picture := {
+  IF(Film_Remaining() > 0){ 
+    EXECUTE Take_Picture(delay);
+    DO gather_weather_data;
+  } ELSE { 
+    SEND scientist@uni.edu 
+         ("No Film Remaining in node " << Get_Node_Id() << " at " <<
+          Get_Time() << ". Please Replace.");
+  }; 
+}
+
+-- Get Pictures on Motion Detect
+ON(INTERRUPT Motion_Detected WITH COOLDOWN 5 mins){
+  DO take-picture;
+}
+
+-- Always sample data every hour
+ON(EVERY 1 hour){
+  DO gather_weather_data;
+  -- If it's likely to be snowing (using a complex heuristic we wrote in C)
+  -- take a picture so that we can record how much has happened. 
+  IF(Is_Snowing(Get_Temperature(),Get_Pressure(),Get_Humidity())){
+    EXECUTE Set_Motion_Threshold(50);
+    DO take-picture; 
+  } ELSE {
+    EXECUTE Set_Motion_Threshold(10); 
+  };
+}
+
+-- Sample more often if it's a storm.
+ON(EVERY 5 mins){ 
+  IF(Get_Pressure() < 50){
+    DO gather_weather_data;
+  };
+}

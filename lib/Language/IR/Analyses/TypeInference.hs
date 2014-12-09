@@ -33,31 +33,10 @@ data Instruction = SimultAt WaitType Time [BlockID]
 deriving (Show,Read,Eq,Ord)
 -}
 
-data Type = StringT
-          | IntT
-          | FloatT 
-          | VoidT
-          | IntervalT 
-          | TimeT
-          | SizeT
-          | BoolT
-          | FuncT Type [Type]
-          deriving (Eq,Show,Read,Ord)
+inferTypes :: Program -> Map String Type -> Map DataID [Type]
+inferTypes prog fEnv = inferProg fEnv prog
 
-typeUniverse :: [Type]
-typeUniverse = [StringT,IntT,FloatT,VoidT,IntervalT,TimeT,SizeT,BoolT]
-
-numericTypes :: [Type] 
-numericTypes = [IntT,FloatT]
-
-inferTypes :: Program -> FilePath -> IO (Map DataID [Type]) 
-inferTypes prog file = 
-  do translationUnit <- parseHeaderFile file
-     let fEnv = genFEnv translationUnit 
-     putStrLn . (++ "\n\n\n") . ppShow $ fEnv -- TODO : Remove debug statements 
-     return $ inferProg fEnv prog
-
- -- File IO --
+-- File IO --
 
 parseHeaderFile :: FilePath -> IO CTranslUnit
 parseHeaderFile input_file =
@@ -187,7 +166,7 @@ inferInst (Call s e p) =
         Just (FuncT rt pt) -> 
           do constrainType s [rt] 
              mapM_ (\ (v,t)-> constrainType v [t]) (zip p pt) 
-        _ -> return ()
+        _ -> error $ "Fucntion " ++ (show e) ++ " not found in type data."
 
 inferInst (Concat s vl) = 
   do constrainType s [StringT]
@@ -261,7 +240,7 @@ getCallType (ExternCall n) = use $ env.at n
 stringCoerceTypes :: Typer [Type] 
 stringCoerceTypes = 
   do ts <- filterM canStringCoerce typeUniverse
-     return (ts ++ [StringT])
+     return ts
 
 canStringCoerce :: Type -> Typer Bool 
 canStringCoerce t = 

@@ -3,16 +3,16 @@ standard_gather_action := GATHER {
     SAVE Humidity() AS humidity, 
     SAVE Soil_Moisture() AS soil_moisture,
     SAVE Current_Time() AS time
-} INTO MOISTURE_TABLE;
+} INTO Moisture_table;
 
 prev_flow_rate := 0;
 current_flow_rate := Flow_Rate(); 
 
-ON(EVERY 1 minute){
+ON (EVERY 1 minute) {
 	prev_flow_rate := current_flow_rate; 
 	current_flow_rate := Flow_Rate(); 
-     rate_of_change := current_flow_rate - prev_flow_rate; 
+        rate_of_change := current_flow_rate - prev_flow_rate; 
 	IF(rate_of_change > 20){
 		DO standard_gather_action; 
-	}
+	};
 }

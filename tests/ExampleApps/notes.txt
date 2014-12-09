@@ -1,0 +1,7 @@
+Notes on problems found in the original programs:
+
+- Table names cannot be all uppercase. Presumably only keywords can.
+- IF statements have to have a semicolon after the close bracket, even though other close brackets don't.
+- IF statement execution blocks can be empty!
+- Hardware API calls cannot start with a lowercase (presumably to increase distinction between hardware functions and SNL variables/data).
+- Equivalence is checked with a single equals (since assignment is :=)

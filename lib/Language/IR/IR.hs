@@ -107,6 +107,23 @@ emptyProg = Program Map.empty Map.empty Map.empty Map.empty
 
 makeLenses ''Program
 
+data Type = StringT
+          | IntT
+          | FloatT 
+          | VoidT
+          | IntervalT 
+          | TimeT
+          | SizeT
+          | BoolT
+          | FuncT Type [Type]
+          deriving (Eq,Show,Read,Ord)
+
+typeUniverse :: [Type]
+typeUniverse = [StringT,IntT,FloatT,IntervalT,TimeT,SizeT,BoolT,VoidT]
+
+numericTypes :: [Type] 
+numericTypes = [IntT,FloatT,TimeT,SizeT,IntervalT]
+
 {-
 
  There's a number of invariants that we need to preserve

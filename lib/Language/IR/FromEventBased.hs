@@ -56,7 +56,6 @@ getNextReg =
   do c <- getNextCounter
      return $ RegID ("reg_" ++ (show c))
 
-
 -- Types for the BlockTransformer Monad --
 
 data BlockState = BlockState {
@@ -337,7 +336,7 @@ convertCooldown e (Interval i) b =
      let vName = "_rule_" ++ (show n) ++ "_var_" ++ (show vc)
      let btName = "rule_" ++ (show n) ++ "_cooldown_if_true" 
      rt <- getNextReg -- next time
-     btID <- addBlock btName [SimultAt Not_Waiting Now [b],
+     btID <- addBlock btName [SimultAt Waiting Now [b],
                               Call (Register rt) (ExternCall "Get_Time") [],
                               Store (VarID vName) (Reg rt)]
      let bcName = "rule_" ++ (show n) ++ "_cooldown_guard"
