@@ -119,10 +119,10 @@ data Type = StringT
           deriving (Eq,Show,Read,Ord)
 
 typeUniverse :: [Type]
-typeUniverse = [StringT,IntT,FloatT,VoidT,IntervalT,TimeT,SizeT,BoolT]
+typeUniverse = [StringT,IntT,FloatT,IntervalT,TimeT,SizeT,BoolT,VoidT]
 
 numericTypes :: [Type] 
-numericTypes = [IntT,FloatT]
+numericTypes = [IntT,FloatT,TimeT,SizeT,IntervalT]
 
 {-
 
