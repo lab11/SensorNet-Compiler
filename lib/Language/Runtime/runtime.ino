@@ -57,7 +57,7 @@ void loop() {
 	//default Scout looping method - a superclass's method, if you will
 	Scout.loop();
 
-	//check function queue
+	//check function queue and execute functions if neccessary
 	check_function_queue(queue);
 
 }
@@ -241,8 +241,16 @@ void finish_record(int table) {
 	flush_buffer(table);
 }
 
+//find out where func goes in the queue!
+//based on last_init + next
 void sort_place_queue(LinkedList<function> &queue, function &func) {
-	
+	int i = 0; 
+	bool not_found_place = true;
+	for(i; not_found_place && (i < queue.size()); ++i) {
+		if(queue.get(i).next_time < func.next_time)
+			not_found_place = false;
+	}
+	queue.add(i, func);
 }
 
 //completely dynamically generated function queue
@@ -277,7 +285,20 @@ void generate_function_queue(LinkedList<function> &queue) {
 }
 
 void check_function_queue(LinkedList<function> &queue) {
-	//check if any functions' times should have already occurred
+	//in main, polling to see if any functions should have occured
+	int i = 0;
+	for(i; i < queue.size(); ++i) {
+		//if function should have already executed
+		if(queue.get(i).next_time < get_time()) {
+			//get and execute function
+			function f = queue.get(i);
+			queue.remove(i);
+			f.func();	//how do we execute this function ptr?
+			//replace function
+			f.next_time += f.cycle;
+			sort_place_queue(queue, f);
+		}
+	}
 }
 
 void spawn(void (*func)(void), int sem_id) {
@@ -288,6 +309,6 @@ void spawn(void (*func)(void), int sem_id) {
 }
 
 //TODO: whatever join() is at this single-threaded point
-void join() {
+void join(void (*func)(bool timed_out), int sem_id, int timeout) {
 
 }

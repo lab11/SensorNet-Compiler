@@ -1,6 +1,8 @@
 //Dummy function definitions for compilation testing
 //Taken from example output from SNC
 
+#include "runtime.h"
+
 #define NULL 0
 
 void act_assign_gather_weather_data_15();
@@ -28,3 +30,14 @@ void act_assign_gather_weather_data_15(){
   store_value(0,0,&_fld_var_humidity_12,sizeof(float)); //didn't end lines here
   finish_record(0);
 }
+
+void record_blk_temp_8(){
+  float reg_7 =  get_temperature();
+  _fld_var_temp_6 = reg_7;
+}
+
+void record_blk_nodeid_2(){
+  int reg_1 =  get_node_id();
+  _fld_var_nodeid_0 = reg_1;
+}
+

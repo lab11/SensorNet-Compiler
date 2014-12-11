@@ -110,6 +110,9 @@
  *
  * */
 
+#ifndef RUNTIME_H
+#define RUNTIME_H
+
 /*** Will need to be built dynamically***/
 #define table_number 1          //given by SNC
 #define field_zero_number 8    //given by SNC for table #
@@ -145,8 +148,8 @@ struct function {
   //function pointer
   void(*func)(void);
   int timeout = -1; //no timeout
-  long last_ran = 0; //= 0;  //don't think Arduino supports time_t
-  long next; //= 0;             
+  long cycle = 0; //= 0;  //don't think Arduino supports time_t
+  long next_time = 0; //= 0;             
 };
 
 /*struct function_queue {
@@ -291,3 +294,5 @@ data record_info = {
   data_type::String,
   length::Int
 }*/
+
+#endif
