@@ -10,6 +10,7 @@
 #include <lwm.h>
 #include <js0n.h>
 #include "runtime.h"
+#include "function_examples.h"
 
 #include <SleepHandler.h>
 //from http://github.com/ivanseidel/LinkedList
@@ -17,16 +18,17 @@
 //from http://code.google.com/p/arduino-buffered-serial
 #include <ByteBuffer.h> 
 
-//Data tables - first index is table, second is column. Row is irrelevant
-
-
 //function table global
-LinkedList<function> function_queue;// = LinkedList<function>();
+LinkedList<function> queue;// = LinkedList<function>();
+
+//table global variables (defined in runtime.h)
 tablezero table_zero;
 
 //one-to-one correspondence between buffers and table #'s
 ByteBuffer buffers [table_number];
 
+void generate_function_queue(LinkedList<function> &queue);
+void check_function_queue(LinkedList<function> &queue);
 
 //	all-important setup 
 //	should be constant across devices (?) - we'll see
@@ -38,19 +40,25 @@ void setup() {
 	/*** Will need to be built dynamically ***/
 	//for each table, initialize buffer with proper size
 	//one char for column value, one '\0', 
-  //four char for float(max), two '/0' to signify the end
+  //four char for float(max), two '/0' to signify the end,
+  //254 characters for possible string (instead of four
+  //for float(max))
 	//e.g. for table 1:
-	buffers[0].init(field_zero_number*8);
+	buffers[0].init(field_zero_number*258);
 	//buffers[1].init(field_one_number*8);
 
 	//Create linked list for function queue 
-	function_queue = LinkedList<function>();
+	queue = LinkedList<function>();
+	generate_function_queue(queue);
 }
 
 //	infinite loop - maintaining/setting up functions, handling data and function operations
 void loop() {
 	//default Scout looping method - a superclass's method, if you will
 	Scout.loop();
+
+	//check function queue
+	check_function_queue(queue);
 
 }
 
@@ -176,8 +184,8 @@ void buffer_pop(int table) {
 	//is it a float next?
 	int f = buffers[table].getFromBack();
 	float d = 0;
-        int c = 0;
-        char s[1024];
+  int c = 0;
+  char s[256];
 	//string
 	if(f == 3) {
 		char gotten = buffers[table].getFromBack();
@@ -201,7 +209,7 @@ void buffer_pop(int table) {
 	int col_num = buffers[table].getFromBack();
 
 	/***WILL NEED TO BE GENERATED DYNAMICALLY***/
-	//case statement on table #
+	//case statement simply on table #
 	switch(table) {
 		case 0: {
                         table_zero.items[col_num].type = f;
@@ -214,7 +222,7 @@ void buffer_pop(int table) {
                           table_zero.items[col_num].i = c;
                 }
 		break;
-		/*case 1:
+		/*case 1:	//for table 1
 			table_one.items[col_num].data = d;
 		break;*/
 		default:
@@ -231,4 +239,55 @@ void finish_record(int table) {
 	while(buffers[table].getSize() != buffers[table].getCapacity())
 		buffer_pop(table);
 	flush_buffer(table);
+}
+
+void sort_place_queue(LinkedList<function> &queue, function &func) {
+	
+}
+
+//completely dynamically generated function queue
+//the code provided here is an illustrative example
+//and to test compilation
+void generate_function_queue(LinkedList<function> &queue) {
+	//create string of names to be copied into function<queues>
+	//braces control scope in C++
+	//
+	{
+		function funct;
+		//define function name
+		//funct.name = "act_assign_gather_weather_data_15";
+		//pass function pointer
+		funct.func = &act_assign_gather_weather_data_15;
+		//place it
+		sort_place_queue(queue, funct);
+	}
+	{
+		function funct;
+		//funct.name = "record_blk_nodeid_2";
+		funct.func = &record_blk_nodeid_2;
+		sort_place_queue(queue, funct);
+	}
+	{
+		function funct;
+		//funct.name = "record_blk_temp_8";
+		funct.func = &record_blk_temp_8;
+		sort_place_queue(queue, funct);
+	} 
+
+}
+
+void check_function_queue(LinkedList<function> &queue) {
+	//check if any functions' times should have already occurred
+}
+
+void spawn(void (*func)(void), int sem_id) {
+	++sem_id;
+	void();
+	//TODO: find in queue so that way can edit last_ran and next
+	--sem_id;
+}
+
+//TODO: whatever join() is at this single-threaded point
+void join() {
+
 }

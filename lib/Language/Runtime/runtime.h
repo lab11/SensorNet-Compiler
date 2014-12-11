@@ -119,8 +119,8 @@
 //with all of the sensors that we have picked
 
 struct table_item{
-  char name [1024];
-  char s [1024];
+  char name [256];
+  char s [256];
   float f;
   int i;
   int type = 0;
@@ -145,6 +145,8 @@ struct function {
   //function pointer
   void(*func)(void);
   int timeout = -1; //no timeout
+  long last_ran = 0; //= 0;  //don't think Arduino supports time_t
+  long next; //= 0;             
 };
 
 /*struct function_queue {
