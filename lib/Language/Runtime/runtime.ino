@@ -36,7 +36,7 @@ void setup() {
 	//default Scout setup
 	Scout.setup("CompilerNet", "v0.01", 1);
 	//create linked list table - from http://github.com/ivanseidel/LinkedList
-	
+	Serial.println("in setup()");
 	/*** Will need to be built dynamically ***/
 	//for each table, initialize buffer with proper size
 	//one char for column value, one '\0', 
@@ -50,10 +50,12 @@ void setup() {
 	//Create linked list for function queue 
 	queue = LinkedList<function>();
 	generate_function_queue(queue);
+        Serial.println("Leaving setup()");
 }
 
 //	infinite loop - maintaining/setting up functions, handling data and function operations
 void loop() {
+        Serial.println("New loop");
 	//default Scout looping method - a superclass's method, if you will
 	Scout.loop();
 
@@ -63,16 +65,16 @@ void loop() {
 }
 
 // Gets the current absolute time. 
-unsigned long long int get_time() {
+unsigned long int Get_Time() {
 	//this calls SleepHandler.seconds() every iteration
-	int time = Scout.now;	
-	//return time.now(); Arduino time library accessor method
+	//int time = Scout.now;	
+	return millis(); //Arduino time library accessor method
 }
 
 // ------------ Local Data OPs -------------
 // 	Returns an integer unique to a specific node 
 //	Let's try using the Pinoccio's serial #
-int get_node_id() {
+int Get_Node_Id() {
 	uint32_t serial = Scout.getHwSerial();
 	//return the last 8 bits - most likely to be different?
 	//simple casting should work, I think
@@ -83,20 +85,20 @@ int get_node_id() {
 // ------------ Temperature Sensor OPs -------------
 //	Returns the temperature in Celsius
 //	Pinoccio has onboard temperature sensor, we'll use that
-float get_temperature() {
+float Get_Temperature() {
 	return Scout.getTemperature();
 }
 
 // ------------ Brightness Sensor OPs -------------
 // Returns the current relative brightness
 // Don't have a sensor for this yet, so returning state of charge instead
-float get_brightness() {
+float Get_Brightness() {
 	return Scout.getBatteryPercentage();
 }
 
 // ------------ LED Output OPs -------------
 // Sets the state of the external LED - namely, the Pinoccio's torch
-int set_led(int state) {
+int Set_Led(int state) {
 	if(!state)
     	Led.disable();
 	else
@@ -105,7 +107,7 @@ int set_led(int state) {
 
 // Gets the current state of the external LED 
 // Returns true if on
-int get_led() {
+int Get_Led() {
 	return Led.isOff();
 }
 
@@ -235,10 +237,31 @@ void flush_buffer(int table) {
 	buffers[table].clear();
 }
 
+void broadcast_table(int table) {
+  //generate dynamically based on table #
+  switch (table){
+    case 0: {
+      //empty out to Serial for now
+        Serial.println("Add time: ");
+        Serial.println(Get_Time());
+        Serial.println("Node id: ");
+        Serial.println(table_zero.items[0].i);
+        Serial.println("Temperature: ");
+        Serial.println(table_zero.items[1].i); 
+        Serial.println("Time according to funct");
+        Serial.println(table_zero.items[2].i);
+      }
+    break;
+    default:
+    break;
+  }
+}
+
 void finish_record(int table) {
 	while(buffers[table].getSize() != buffers[table].getCapacity())
 		buffer_pop(table);
-	flush_buffer(table);
+	flush_buffer(table);  
+        broadcast_table(table);
 }
 
 //find out where func goes in the queue!
@@ -259,6 +282,7 @@ void sort_place_queue(LinkedList<function> &queue, function &func) {
 void generate_function_queue(LinkedList<function> &queue) {
 	//create string of names to be copied into function<queues>
 	//braces control scope in C++
+        Serial.println("generating function queue");
 	//
 	{
 		function funct;
@@ -267,29 +291,32 @@ void generate_function_queue(LinkedList<function> &queue) {
 		//pass function pointer
 		funct.func = &act_assign_gather_weather_data_15;
 		//place it
+                funct.next_time = 5;
+                funct.cycle = 5;
 		sort_place_queue(queue, funct);
 	}
 	{
 		function funct;
 		//funct.name = "record_blk_nodeid_2";
 		funct.func = &record_blk_nodeid_2;
+                funct.next_time = 5;
+                funct.cycle = 5;
 		sort_place_queue(queue, funct);
 	}
-	{
-		function funct;
-		//funct.name = "record_blk_temp_8";
-		funct.func = &record_blk_temp_8;
-		sort_place_queue(queue, funct);
-	} 
+Serial.println("finished generating function queue");
 
 }
 
 void check_function_queue(LinkedList<function> &queue) {
+    Serial.println("checking function queue");
 	//in main, polling to see if any functions should have occured
 	int i = 0;
 	for(i; i < queue.size(); ++i) {
+                Serial.println(i);
 		//if function should have already executed
-		if(queue.get(i).next_time < get_time()) {
+                Serial.println(queue.get(i).next_time);
+                Serial.println(Get_Time());
+		if(queue.get(i).next_time < Get_Time()) {
 			//get and execute function
 			function f = queue.get(i);
 			queue.remove(i);
@@ -299,9 +326,11 @@ void check_function_queue(LinkedList<function> &queue) {
 			sort_place_queue(queue, f);
 		}
 	}
+  Serial.println("Done checking function queue");
 }
 
 void spawn(void (*func)(void), int sem_id) {
+        Serial.println("Spawning function");
 	++sem_id;
 	void();
 	//TODO: find in queue so that way can edit last_ran and next
@@ -310,5 +339,5 @@ void spawn(void (*func)(void), int sem_id) {
 
 //TODO: whatever join() is at this single-threaded point
 void join(void (*func)(bool timed_out), int sem_id, int timeout) {
-
+  //currently a no-op
 }

@@ -178,7 +178,7 @@ void schedule_absolute(void (*x)(void), time_t time);
 // Gets the current absolute time. 
 // TODO: determine way to pull absolute current time over network
 // currently returns absolute time (from beginning of uptime)
-time_t get_time(); 
+unsigned long Get_Time(); 
 
 // ------------ Timer OPs -------------
 
@@ -195,7 +195,7 @@ void schedule_interrupt(void (*x)(void), int int_num, trigger trigger_type);
 // ------------ Local Data OPs -------------
 
 // Returns an integer unique to a specific node 
-int get_node_id();
+int Get_Node_Id();
 
 // ------------ Lux Sensor OPs, based off of Adafruit TSL2561 -------------
 
@@ -205,13 +205,13 @@ int get_node_id();
 void setup_TSL2561();
 
 // Returns light in SI lux units
-float get_light();
+float Get_Light();
 
 // Returns broadband in SI lux units
-float get_broadband_light();
+float Get_Broadband_Light();
 
 // Returns IR in SI lux units
-float get_ir_light();
+float Get_Ir_Light();
 
 
 // ------------ Temperature Sensor OPs -------------
@@ -220,22 +220,22 @@ float get_ir_light();
 // Pinoccio has onboard temperature sensor, we'll use that
 
 //returns temperature
-float get_temperature();
+float Get_Temperature();
 
 // ------------ Battery Power Sensor OPs -------------
 
 // Returns the current battery status
-float get_battery_status();
+float Get_Battery_Status();
 
 // ------------ LED Output OPs -------------
 
 //  Sets the state of the external LED  
 //  0 is off, nonzero is on
-int set_led(int state); 
+int Set_Led(int state); 
 
 // Gets the current state of the external LED 
 // Returns true if on
-int get_led();
+int Get_Led();
 
 // ------------ Table OPs -------------
 
