@@ -98,6 +98,7 @@ executable SensorNet-ProfusionChecker
   build-depends:     base >= 4.6,
                      array,
                      time >= 1.5,
+                     sensornet
 
 executable SensorNet-Compiler
   main-is:           Compiler.hs

@@ -148,7 +148,7 @@ convertInst (Gather t fl) =
           do tList <- use $ p.tables.at(t) 
              let fNum = (fromJust .(elemIndex f) . fromJust) tList
              bufL <- toCBufLen v
-             return [i|store_value(${n},${fNum},&${toCVal v},${bufL}|]
+             return [i|store_value(${n},${fNum},&${toCVal v},${bufL});|]
 
 convertInst (Call s (ExternCall e) vl) = 
   do sts <- toCSto s
