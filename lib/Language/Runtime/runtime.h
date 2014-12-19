@@ -113,20 +113,30 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
+//define peripherals
+#define Motion_Detected 0
+
+#define table_number 1
+#define field_zero_number 8
+#define field_one_number 8 //an example of a second one
+
+//typedefs
+typedef unsigned char bool;
+typedef unsigned long int time_t; // For the moment standard posix time with a 
+typedef unsigned long int interval_t; 
+typedef unsigned int size_t;
+
+
 /*** Will need to be built dynamically***/
-#define table_number 1          //given by SNC
-#define field_zero_number 8    //given by SNC for table #
-#define field_one_number 8     //given by SNC for table #
 //then build tables based on fields and types
 //the rest of this header file is an example to work 
 //with all of the sensors that we have picked
-
-struct table_item{
+struct table_item {
   char name [256];
   char s [256];
   float f;
   int i;
-  int type = 0;
+  int type; //default should be zero
   //3 = string
   //2 = float
   //1 = int
@@ -135,8 +145,8 @@ struct table_item{
 
 /*** Will need to be built dynamically for each table***/
 struct tablezero {
-  table_item items [field_zero_number];
-};
+  struct table_item items [field_zero_number];
+} table_zero;
 
 /*void initialize_table(&table, int table_size) {
   //one char for column value, one '\0', 
@@ -147,9 +157,9 @@ struct tablezero {
 struct function {
   //function pointer
   void(*func)(void);
-  int timeout = -1; //no timeout
-  long cycle = 0; //= 0;  //don't think Arduino supports time_t
-  long next_time = 0; //= 0;             
+  int timeout;// = -1; //no timeout
+  long cycle;//= 0;  //don't think Arduino supports time_t
+  long next_time;//= 0;             
 };
 
 /*struct function_queue {
@@ -165,9 +175,6 @@ void spawn(void (*func)(void), int sem_id);
 void join(void (*func)(bool timed_out), int sem_id, int timeout);
 
 // ------------ Timer OPs -------------
-
-typedef uint64_t time_t; // For the moment standard posix time with a 
-		 	 // granularity of one second. 
 
 // Schedules a function to be called some number of seconds into the future
 void schedule_relative(void (*x)(void), int seconds); 
@@ -186,11 +193,11 @@ unsigned long Get_Time();
 //   a bit of research makes me think this isn't feasible.  
 #define GET_EVENT_IRQ()
 
-typedef enum {RISING_EDGE, FALLING_EDGE} trigger;
+//typedef enum {RISING_EDGE, FALLING_EDGE} trigger;
 
 // Call a function when an interrupt with a particular number is triggered. 
 #define BUTTON 15
-void schedule_interrupt(void (*x)(void), int int_num, trigger trigger_type);
+void schedule_interrupt(void (*x)(void), int int_num);//, trigger trigger_type);
 
 // ------------ Local Data OPs -------------
 
@@ -294,5 +301,13 @@ data record_info = {
   data_type::String,
   length::Int
 }*/
+
+/* going to temporarily keep these as no-ops*/
+char * string_coerce_str(const char *str , char * buf, size_t buflen) {return NULL;};
+char * string_coerce_int(const int foo, char * buf, size_t buflen) {return NULL;};  
+char * string_coerce_bool(const bool foo, char * buf, size_t buflen) {return NULL;};  
+char * string_coerce_float(const float foo, char * buf, size_t buflen) {return NULL;};  
+char * string_coerce_time(const time_t foo, char * buf, size_t buflen) {return NULL;};  
+char * string_coerce_interval(const interval_t foo, char * buf, size_t buflen) {return NULL;};  
 
 #endif

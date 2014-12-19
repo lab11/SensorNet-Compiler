@@ -10,7 +10,7 @@
 #include <lwm.h>
 #include <js0n.h>
 #include "runtime.h"
-#include "function_examples.h"
+#include "test_header.h"
 
 #include <SleepHandler.h>
 //from http://github.com/ivanseidel/LinkedList
@@ -18,11 +18,12 @@
 //from http://code.google.com/p/arduino-buffered-serial
 #include <ByteBuffer.h> 
 
+
 //function table global
 LinkedList<function> queue;// = LinkedList<function>();
 
 //table global variables (defined in runtime.h)
-tablezero table_zero;
+//tablezero table_zero;
 
 //one-to-one correspondence between buffers and table #'s
 ByteBuffer buffers [table_number];
@@ -44,13 +45,15 @@ void setup() {
   //254 characters for possible string (instead of four
   //for float(max))
 	//e.g. for table 1:
-	buffers[0].init(field_zero_number*258);
+	for(int i = 0; i < table_number; --i)
+		buffers[i].init(field_zero_number*258);
 	//buffers[1].init(field_one_number*8);
 
 	//Create linked list for function queue 
 	queue = LinkedList<function>();
-	generate_function_queue(queue);
-        Serial.println("Leaving setup()");
+	//generate_function_queue(queue);
+  //      Serial.println("Leaving setup()");
+  init_snl();
 }
 
 //	infinite loop - maintaining/setting up functions, handling data and function operations
@@ -279,7 +282,7 @@ void sort_place_queue(LinkedList<function> &queue, function &func) {
 //completely dynamically generated function queue
 //the code provided here is an illustrative example
 //and to test compilation
-void generate_function_queue(LinkedList<function> &queue) {
+/*void generate_function_queue(LinkedList<function> &queue) {
 	//create string of names to be copied into function<queues>
 	//braces control scope in C++
         Serial.println("generating function queue");
@@ -305,7 +308,7 @@ void generate_function_queue(LinkedList<function> &queue) {
 	}
 Serial.println("finished generating function queue");
 
-}
+}*/
 
 void check_function_queue(LinkedList<function> &queue) {
     Serial.println("checking function queue");
@@ -313,7 +316,7 @@ void check_function_queue(LinkedList<function> &queue) {
 	int i = 0;
 	for(i; i < queue.size(); ++i) {
                 Serial.println(i);
-		//if function should have already executed
+								//if function should have already executed
                 Serial.println(queue.get(i).next_time);
                 Serial.println(Get_Time());
 		if(queue.get(i).next_time < Get_Time()) {
@@ -337,7 +340,44 @@ void spawn(void (*func)(void), int sem_id) {
 	--sem_id;
 }
 
-//TODO: whatever join() is at this single-threaded point
 void join(void (*func)(bool timed_out), int sem_id, int timeout) {
   //currently a no-op
+}
+
+//schedules interrupt
+//int_num refers to which peripheral to schedule
+//valid digital I/O interrupt pins on Pinoccio:
+// 0-7: INT4, INT5, INT0, INT1, INT2, INT3, INT6, INT7
+// I think:
+//INT0 - SCL 			INT1 - SDA 		INT2 - RX1 	INT3 - TX1
+//INT4 - D4				INT5 - D5 		INT6 - D7  	INT7 - battery
+void schedule_interrupt(void (*x)(void), int num){
+	switch (num){
+		//Motion Detected
+		//we're going to tie this to a button on pin D4
+		case 0: {
+				attachInterrupt(0, x, RISING);
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+// Schedules a function to be called some number of seconds into the future
+void schedule_relative(void (*x)(void), int seconds) {
+	function funct;
+	funct.func = x;
+	funct.cycle = 0;	//disable cycling functionality for now
+	//generate the next time for it to execute
+	funct.next_time = millis()/1000 + seconds;
+	sort_place_queue(queue, funct);
+}
+
+void schedule_absolute(void (*x)(void), time_t time) {
+	function funct;
+	funct.func = x;
+	funct.next_time = time;
+	funct.cycle = 0; 	//disable cycling functionality for now
+	sort_place_queue(queue, funct);
 }
