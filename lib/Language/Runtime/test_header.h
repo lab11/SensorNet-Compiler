@@ -41,5 +41,7 @@ char * string_coerce_float(const float foo, char * buf, size_t buflen);
 char * string_coerce_time(const time_t foo, char * buf, size_t buflen);  
 char * string_coerce_interval(const interval_t foo, char * buf, size_t buflen);  
 
+void init_snl();
+
 #endif
 
