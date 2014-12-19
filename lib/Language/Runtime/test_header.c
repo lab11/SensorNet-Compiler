@@ -7,9 +7,9 @@ typedef unsigned char bool;
 typedef unsigned long int time_t; // For the moment standard posix time with a 
 typedef unsigned long int interval_t; 
 typedef unsigned int size_t;
-
 #include "test_header.h"
 #include "runtime.h"
+//#include "runtime_lib.h"
 
  // Header Declarations 
 void act_assign_gather_weather_data_15();
@@ -19,8 +19,8 @@ void if_false_43__47();
 void if_true_18_20();
 void if_true_43_45();
 void if_true_53_54();
-void init_snl();
-void on_boot();
+//void init_snl();
+//void on_boot();
 void on_interrupt_Motion_Detected();
 void record_blk_humidity_14();
 void record_blk_nodeid_2();
@@ -44,7 +44,7 @@ float _fld_var_pressure_9;
 float _fld_var_temp_6;
 time_t _fld_var_time_3;
 time_t _rule_28_var_30;
-float delay;
+float delay_other;
 
 
 void act_assign_gather_weather_data_15(){
@@ -77,15 +77,15 @@ void if_false_18__24(){
   int reg_21 =  Get_Node_Id();
   time_t reg_22 =  Get_Time();
   char _b0[1024];
-  char * _t0 = _b0;
+  char * _t0 = &_b0[0];
   _t0 = string_coerce_str("No Film Remaining in node ",_t0,1024-(_t0- _b0));
   _t0 = string_coerce_int(reg_21,_t0,1024-(_t0- _b0));
   _t0 = string_coerce_str(" at ",_t0,1024-(_t0- _b0));
   _t0 = string_coerce_time(reg_22,_t0,1024-(_t0- _b0));
   _t0 = string_coerce_str(". Please Replace.",_t0,1024-(_t0- _b0));
-  _t0 = '0';
-  char reg_23 =  _b0;
-  send_email("scientist@uni.edu",reg_23,1024);
+  _t0 = 0;  //previously '0'
+  char * reg_23 =  &_b0[0];
+  //send_email("scientist@uni.edu",reg_23,1024);
 }
 
 void if_false_43__47(){
@@ -93,7 +93,7 @@ void if_false_43__47(){
 }
 
 void if_true_18_20(){
-   Take_Picture(delay);
+   Take_Picture(delay_other);
   spawn(&act_assign_gather_weather_data_15,1);
   join(NULL,1,0);
 }
@@ -203,7 +203,7 @@ void rule_50_action_56(){
   if(reg_52){
    if_true_53_54();
   } else {
-   if_false_53__55();
+   //if_false_53_55();
   }
 }
 
@@ -214,6 +214,6 @@ void rule_50_every_bootstrap_57(){
 }
 
 void valAssigns_26_27(){
-  delay = 1;
+  delay_other = 1;
 }
 

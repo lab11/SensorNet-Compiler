@@ -121,14 +121,13 @@
 #define field_one_number 8 //an example of a second one
 
 //typedefs
-typedef unsigned char bool;
+//typedef unsigned char bool;
 typedef unsigned long int time_t; // For the moment standard posix time with a 
 typedef unsigned long int interval_t; 
 typedef unsigned int size_t;
 
 
-/*** Will need to be built dynamically***/
-//then build tables based on fields and types
+//build tables based on fields and types
 //the rest of this header file is an example to work 
 //with all of the sensors that we have picked
 struct table_item {
@@ -161,11 +160,6 @@ struct function {
   long cycle;//= 0;  //don't think Arduino supports time_t
   long next_time;//= 0;             
 };
-
-/*struct function_queue {
-  //this is intended to be a list of function pointers
-  LinkedList<void(*)(void)> data; 
-};*/
 
 // Macro shenangiangs to a unique ID for a gather op at compiler time
 //   a bit of research makes me think this isn't feasible.  
@@ -244,6 +238,10 @@ int Set_Led(int state);
 // Returns true if on
 int Get_Led();
 
+// ------------ OPs to be implemented -------------
+float Get_Pressure();
+float Get_Humidity();
+
 // ------------ Table OPs -------------
 
 /* We assume that all tables are statically allocated, and that at runtime 
@@ -305,9 +303,21 @@ data record_info = {
 /* going to temporarily keep these as no-ops*/
 char * string_coerce_str(const char *str , char * buf, size_t buflen) {return NULL;};
 char * string_coerce_int(const int foo, char * buf, size_t buflen) {return NULL;};  
-char * string_coerce_bool(const bool foo, char * buf, size_t buflen) {return NULL;};  
-char * string_coerce_float(const float foo, char * buf, size_t buflen) {return NULL;};  
+//char * string_coerce_bool(const bool foo, char * buf, size_t buflen) {return NULL;};  
+//char * string_coerce_float(const float foo, char * buf, size_t buflen) {return NULL;};  
 char * string_coerce_time(const time_t foo, char * buf, size_t buflen) {return NULL;};  
-char * string_coerce_interval(const interval_t foo, char * buf, size_t buflen) {return NULL;};  
+//char * string_coerce_interval(const interval_t foo, char * buf, size_t buflen) {return NULL;};  
+
+void Print_Message(const char* message);
+bool Other_Function(const int foo,
+                    const float bar,
+                    const bool stuff); 
+char * Test_Set(float foo, char * buf, size_t buflen); 
+
+void Take_Picture(float delay);
+int  Film_Remaining(); 
+bool Is_Snowing(float temp,float pressure,float humidity);
+
+void Set_Motion_Threshold(float trigger_level);
 
 #endif
