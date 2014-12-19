@@ -222,15 +222,14 @@ void buffer_pop(int table) {
 	//case statement simply on table #
 	switch(table) {
 		case 0: {
-                        table_zero.items[col_num].type = f;
-                        
-                        if(f == 3)
-                          strcpy(table_zero.items[col_num].s, s);
-                        else if(f == 2)
-                          table_zero.items[col_num].f = d;
-                        else
-                          table_zero.items[col_num].i = c;
-                }
+				table_zero.items[col_num].type = f;
+        if(f == 3)
+        	strcpy(table_zero.items[col_num].s, s);
+        else if(f == 2)
+          table_zero.items[col_num].f = d;
+        else
+          table_zero.items[col_num].i = c;
+    }
 		break;
 		/*case 1:	//for table 1
 			table_one.items[col_num].data = d;
