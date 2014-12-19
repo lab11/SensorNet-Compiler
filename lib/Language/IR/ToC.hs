@@ -127,7 +127,7 @@ convertInst (SimultAt Waiting (Rel _) _) = error "Invalid SimultAt"
 
 convertInst (SimultAt Not_Waiting (Rel (Interval s)) bl) =
   mapM getBlock bl
-  where getBlock (BlockID b) = return [i|schedule_absolute(&${b},${s});|]
+  where getBlock (BlockID b) = return [i|schedule_relative(&${b},${s});|]
   
 convertInst (Store (VarID n) v) =
   do t <- getType v

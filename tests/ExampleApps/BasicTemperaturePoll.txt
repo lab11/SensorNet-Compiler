@@ -1,4 +1,4 @@
-ON( EVERY 5 mins ){
+ON( EVERY 10 mins ){
     GATHER { 
         SAVE Get_Node_Id() AS id,
         SAVE Get_Temperature() AS temp,

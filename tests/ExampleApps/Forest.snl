@@ -9,7 +9,7 @@ gather_weather_data := GATHER {
 
 delay := 1; -- Seconds
 
-take-picture := {
+take_picture := {
   IF(Film_Remaining() > 0){ 
     EXECUTE Take_Picture(delay);
     DO gather_weather_data;
