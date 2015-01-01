@@ -1,0 +1,38 @@
+XML
+
+<tables>
+	<number>2</number>
+	<zero>
+		<type>int</type>
+	</zero>
+	<zero>
+		<type>string</type>
+	</zero>
+	<zero>
+		<type>char</type>
+	</zero>
+	<zero>
+		<type>float</type>
+	</zero>
+	<one>
+		<type>float</type>
+	</one>
+	<one>
+		<type>int</type>
+	</one>
+	<one>
+		<type>char</type>
+	</one>
+	<one>
+		<type>string</type>
+	</one>
+</tables>
+
+JSON
+
+{"tables": [
+	"zero": [
+	]
+	"one": [
+	]
+]}

@@ -1,0 +1,16 @@
+{ "tables": {
+    "number": "2",
+    "zero": [
+      { "type": "int" },
+      { "type": "string" },
+      { "type": "char" },
+      { "type": "float" }
+    ],
+    "one": [
+      { "type": "float" },
+      { "type": "int" },
+      { "type": "char" },
+      { "type": "string" }
+    ]
+  }
+}

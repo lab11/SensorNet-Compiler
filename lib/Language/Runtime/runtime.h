@@ -117,8 +117,8 @@
 #define Motion_Detected 0
 
 #define table_number 1
-#define field_zero_number 8
-#define field_one_number 8 //an example of a second one
+#define field_0_number 8
+#define field_1_number 8 //an example of a second one
 
 //typedefs
 //typedef unsigned char bool;
@@ -143,9 +143,9 @@ struct table_item {
 };
 
 /*** Will need to be built dynamically for each table***/
-struct tablezero {
-  struct table_item items [field_zero_number];
-} table_zero;
+struct table0 {
+  struct table_item items [field_0_number];
+} table_0;
 
 /*void initialize_table(&table, int table_size) {
   //one char for column value, one '\0', 
