@@ -1,12 +1,12 @@
 { "tables": {
     "number": "2",
-    "zero": [
+    "0": [
       { "type": "int" },
       { "type": "string" },
       { "type": "char" },
       { "type": "float" }
     ],
-    "one": [
+    "1": [
       { "type": "float" },
       { "type": "int" },
       { "type": "char" },

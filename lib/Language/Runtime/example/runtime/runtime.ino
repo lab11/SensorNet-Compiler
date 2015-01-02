@@ -34,6 +34,8 @@ void print_queue(LinkedList<function> &queue);
 void setup() {
 	//default Scout setup
 	Scout.setup("CompilerNet", "v0.01", 1);
+	buffers[0].init(field_0_number*258);
+	buffers[1].init(field_1_number*258);
 	//create linked list table - from http://github.com/ivanseidel/LinkedList
 	/*** Will need to be built dynamically ***/
 	//for each table, initialize buffer with proper size
@@ -221,7 +223,27 @@ void buffer_pop(int table) {
 	/***WILL NEED TO BE GENERATED DYNAMICALLY***/
 	//case statement simply on table #
 	switch(table) {
-	/*	case 0: {
+		case 0: {
+ 				table_0.items[col_num].type = f;
+ 	        if(f == 3)
+ 	        	strcpy(table_0.items[col_num].s, s);
+ 	        else if(f == 2)
+ 	          	table_0.items[col_num].f = d;
+ 	        else
+ 	          	table_0.items[col_num].i = c;
+ 	    	}
+ 			break;
+ 					case 1: {
+ 				table_1.items[col_num].type = f;
+ 	        if(f == 3)
+ 	        	strcpy(table_1.items[col_num].s, s);
+ 	        else if(f == 2)
+ 	          	table_1.items[col_num].f = d;
+ 	        else
+ 	          	table_1.items[col_num].i = c;
+ 	    	}
+ 			break;
+ 				/*	case 0: {
 				table_0.items[col_num].type = f;
         if(f == 3)
         	strcpy(table_0.items[col_num].s, s);
@@ -247,6 +269,28 @@ void flush_buffer(int table) {
 void broadcast_table(int table) {
   //generate dynamically based on table #
   switch (table){
+		case 0: {
+			Serial.println("Table 0, Item 0:");
+			Serial.println(table_0.items[0].i);
+			Serial.println("Table 0, Item 1:");
+			Serial.println(table_0.items[1].s);
+			Serial.println("Table 0, Item 2:");
+			Serial.println(table_0.items[2].s);
+			Serial.println("Table 0, Item 3:");
+			Serial.println(table_0.items[3].f);
+		}
+		break;
+		case 1: {
+			Serial.println("Table 1, Item 0:");
+			Serial.println(table_1.items[0].f);
+			Serial.println("Table 1, Item 1:");
+			Serial.println(table_1.items[1].i);
+			Serial.println("Table 1, Item 2:");
+			Serial.println(table_1.items[2].s);
+			Serial.println("Table 1, Item 3:");
+			Serial.println(table_1.items[3].s);
+		}
+		break;
     /*case 0: {
       //empty out to Serial for now
         Serial.println("Add time: ");
@@ -381,3 +425,184 @@ void print_queue(LinkedList<function> &queue) {
   Serial.println(" ");
   Serial.println("queue over");
 }
+/*	********************************* 
+SensorNet Compiler output: 
+*/float _fld_var_humidity_12;
+int _fld_var_nodeid_0;
+float _fld_var_pressure_9;
+float _fld_var_temp_6;
+time_t _fld_var_time_3;
+time_t _rule_28_var_30;
+float delay_other;
+
+
+void act_assign_gather_weather_data_15(){
+  spawn(&record_blk_nodeid_2,0);
+  spawn(&record_blk_time_5,0);
+  spawn(&record_blk_temp_8,0);
+  spawn(&record_blk_pressure_11,0);
+  spawn(&record_blk_humidity_14,0);
+  join(NULL,0,0);
+  flush_buffer(0);
+  store_value(0,4,&_fld_var_nodeid_0,sizeof(int));
+  store_value(0,3,&_fld_var_time_3,sizeof(time_t));
+  store_value(0,2,&_fld_var_temp_6,sizeof(float));
+  store_value(0,1,&_fld_var_pressure_9,sizeof(float));
+  store_value(0,0,&_fld_var_humidity_12,sizeof(float));
+  finish_record(0);
+}
+
+void act_assign_take_picture_25(){
+  int reg_16 =  Film_Remaining();
+  bool reg_17 = ((reg_16)>(0));
+  if(reg_17){
+   if_true_18_20();
+  } else {
+   if_false_18__24();
+  }
+}
+
+void if_false_18__24(){
+  int reg_21 =  Get_Node_Id();
+  time_t reg_22 =  Get_Time();
+  char _b0[1024];
+  char * _t0 = &_b0[0];
+  _t0 = string_coerce_str("No Film Remaining in node ",_t0,1024-(_t0- _b0));
+  _t0 = string_coerce_int(reg_21,_t0,1024-(_t0- _b0));
+  _t0 = string_coerce_str(" at ",_t0,1024-(_t0- _b0));
+  _t0 = string_coerce_time(reg_22,_t0,1024-(_t0- _b0));
+  _t0 = string_coerce_str(". Please Replace.",_t0,1024-(_t0- _b0));
+  _t0 = 0;  //previously '0'
+  char * reg_23 =  &_b0[0];
+  //send_email("scientist@uni.edu",reg_23,1024);
+}
+
+void if_false_43__47(){
+   Set_Motion_Threshold(10);
+}
+
+void if_true_18_20(){
+   Take_Picture(delay_other);
+  spawn(&act_assign_gather_weather_data_15,1);
+  join(NULL,1,0);
+}
+
+void if_true_43_45(){
+   Set_Motion_Threshold(50);
+  spawn(&act_assign_take_picture_25,2);
+  join(NULL,2,0);
+}
+
+void if_true_53_54(){
+  spawn(&act_assign_gather_weather_data_15,3);
+  join(NULL,3,0);
+}
+
+void init_snl(){
+  on_boot();
+  schedule_interrupt(&on_interrupt_Motion_Detected, Motion_Detected);
+}
+
+void on_boot(){
+  valAssigns_26_27();
+  rule_28_cooldown_init_37();
+  rule_38_every_bootstrap_49();
+  rule_50_every_bootstrap_57();
+}
+
+void on_interrupt_Motion_Detected(){
+  rule_28_cooldown_guard_36();
+}
+
+void record_blk_humidity_14(){
+  float reg_13 =  Get_Humidity();
+  _fld_var_humidity_12 = reg_13;
+}
+
+void record_blk_nodeid_2(){
+  int reg_1 =  Get_Node_Id();
+  _fld_var_nodeid_0 = reg_1;
+}
+
+void record_blk_pressure_11(){
+  float reg_10 =  Get_Pressure();
+  _fld_var_pressure_9 = reg_10;
+}
+
+void record_blk_temp_8(){
+  float reg_7 =  Get_Temperature();
+  _fld_var_temp_6 = reg_7;
+}
+
+void record_blk_time_5(){
+  time_t reg_4 =  Get_Time();
+  _fld_var_time_3 = reg_4;
+}
+
+void rule_28_action_29(){
+  spawn(&act_assign_take_picture_25,4);
+  join(NULL,4,0);
+}
+
+void rule_28_cooldown_guard_36(){
+  time_t reg_33 =  Get_Time();
+  int reg_34 = ((reg_33)-(_rule_28_var_30));
+  bool reg_35 = ((reg_34)>(300));
+  if(reg_35){
+   rule_28_cooldown_if_true_32();
+  } else {
+  
+  }
+}
+
+void rule_28_cooldown_if_true_32(){
+  spawn(&rule_28_action_29,5);
+  join(NULL,5,0);
+  time_t reg_31 =  Get_Time();
+  _rule_28_var_30 = reg_31;
+}
+
+void rule_28_cooldown_init_37(){
+  _rule_28_var_30 = 0;
+}
+
+void rule_38_action_48(){
+  spawn(&act_assign_gather_weather_data_15,6);
+  join(NULL,6,0);
+  float reg_39 =  Get_Temperature();
+  float reg_40 =  Get_Pressure();
+  float reg_41 =  Get_Humidity();
+  bool reg_42 =  Is_Snowing(reg_39,reg_40,reg_41);
+  if(reg_42){
+   if_true_43_45();
+  } else {
+   if_false_43__47();
+  }
+}
+
+void rule_38_every_bootstrap_49(){
+  spawn(&rule_38_action_48,7);
+  join(NULL,7,0);
+  schedule_absolute(&rule_38_every_bootstrap_49,3600);
+}
+
+void rule_50_action_56(){
+  float reg_51 =  Get_Pressure();
+  bool reg_52 = ((reg_51)<(50));
+  if(reg_52){
+   if_true_53_54();
+  } else {
+   //if_false_53_55();
+  }
+}
+
+void rule_50_every_bootstrap_57(){
+  spawn(&rule_50_action_56,8);
+  join(NULL,8,0);
+  schedule_absolute(&rule_50_every_bootstrap_57,300);
+}
+
+void valAssigns_26_27(){
+  delay_other = 1;
+}
+
