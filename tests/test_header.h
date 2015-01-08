@@ -10,6 +10,7 @@ float Get_Temperature();
 float Get_Brightness();
 float Get_Pressure();
 float Get_Humidity();
+float Get_Soil_Moisture();
 int Set_Led(const bool state); 
 int Get_Led();
 void Print_Message(const char* message);
@@ -23,6 +24,10 @@ int  Film_Remaining(float delay);
 bool Is_Snowing(float temp,float pressure,float humidity);
 
 void Set_Motion_Threshold(float trigger_level);
+
+int Remaining_Samples();
+
+void Sample_Water();
 
 char * string_coerce_str(const char *str , char * buf, size_t buflen);
 char * string_coerce_int(const int foo, char * buf, size_t buflen);  

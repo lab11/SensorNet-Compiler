@@ -1,30 +1,30 @@
 standard_gather_action := GATHER {
-    SAVE Node_Id() AS id,
-    SAVE Humidity() AS humidity, 
-    SAVE Soil_Moisture() AS soil_moisture,
-    SAVE Current_Time() AS time
+    SAVE Get_Node_Id() AS id,
+    SAVE Get_Humidity() AS humidity, 
+    SAVE Get_Soil_Moisture() AS soil_moisture,
+    SAVE Get_Time() AS time
 } INTO Moisture_Table;
 
 send_out_of_sample_jars_alert := {
-    SEND foo@bar.com ("Node " << Node_Id() << 
+    SEND foo@bar.com ("Node " << Get_Node_Id() << 
      " missed gathering sample at " << 
-     Get_time() << ".");
+     Get_Time() << ".");
 }
 
 sample_water_action := { 
-    IF (Remaining_samples() > 0) {
-         EXECUTE Sample_water();
+    IF (Remaining_Samples() > 0) {
+         EXECUTE Sample_Water();
     } ELSE {
-         EXECUTE Send_out_of_sample_jars_alert();
+         DO send_out_of_sample_jars_alert;
     };
-    IF (Remaining_samples() == 0) {
-         SEND foo@bar.com ("Node " << Node_Id() << 
+    IF (Remaining_Samples() == 0) {
+         SEND foo@bar.com ("Node " << Get_Node_Id() << 
          " out of samples, please collect.");
     };
     DO standard_gather_action;
 }
 
-ON (( CHECK EVERY 1 min AND WHEN ( Humidity() > 90 ) BECOMES TRUE) WAIT 5 mins THEN) {
+ON (( CHECK EVERY 1 min AND WHEN ( Get_Humidity() > 90 ) BECOMES TRUE) WAIT 5 mins THEN) {
     DO sample_water_action; 
 }
 
