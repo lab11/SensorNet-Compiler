@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Language.IR.Analyses.TypeInference where
 
@@ -14,6 +15,7 @@ import Language.IR.IR
 import Data.Time.LocalTime (LocalTime)
 import Data.List 
 import Data.Maybe 
+import Data.String.Here
 import Control.Monad.State
 import Control.Monad.Trans (lift) 
 import Control.Lens
@@ -56,6 +58,7 @@ getDef (CDeclExt (CDecl rts ((Just s,Nothing,Nothing):[]) _)) =
      fName <- getName s
      pType <- getParameterType s 
      return (fName, FuncT rType pType)
+
 getDef _ = Nothing
 
 getElemType :: [CDeclSpec] -> Maybe Type 
@@ -85,6 +88,37 @@ getParameterType _ = Nothing
 getDeclType :: CDecl -> Maybe Type
 getDeclType (CDecl rt _ _) = getElemType rt 
 getDeclType _ = Nothing
+
+ -- Generate JSON given type info -- 
+
+genTableinfo :: Program -> Map DataID Type -> [[(String,String)]]
+genTableinfo p t = fieldTypeList . fieldList . sortTableList $ tableList
+  where tableList = Map.toList $ p^.tables 
+        sortTableList = sortBy (\ (k1,_) (k2,_) -> 
+          compare (Map.findIndex k1 $ p^.tables)
+                  (Map.findIndex k2 $ p^.tables))
+        fieldList = map snd
+        fieldTypeList = map $ map (\ f@(FieldID s) ->
+          (s,case (Map.lookup (FldName f) t) of 
+            Just StringT -> "string"
+            Just IntT -> "int"
+            Just FloatT -> "float" 
+            Just VoidT -> "void"
+            Just IntervalT -> "interval_t" 
+            Just TimeT -> "time_t"
+            Just SizeT -> "size_t"
+            Just BoolT -> "bool_t"
+            _ -> "INVALID TYPE"))
+
+{-intersperse :: a -> [a] -> [a]
+intersperse a (x:[]) = x 
+intersperse a (x:xs) = x : a : intersperse a xs
+-}
+tableinfoToJSON :: [[(String,String)]] -> String
+tableinfoToJSON s = [i| { "tables": {  "number": "${show $ length s}" ${concat . (intersperse ",") . (map (mapT 0)) $ s}}}|]
+  where mapT n fl = [i|,"${show n}" : [${ concat . (intersperse ",")  $ map mapF fl }]|]
+        mapF (s,t) = [i|{ "type":"${t}"}|]
+
 
  -- Type Inference -- 
 
