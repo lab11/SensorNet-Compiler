@@ -1,4 +1,4 @@
-/*	By Colin Szechy
+ /*	By Colin Szechy
  */
 
 //default Scout libraries - from the "Bootstrap" example

@@ -24,6 +24,13 @@ instead:
 
       $ cabal install --enable-tests --force-reinstall
 
+####To download code onto a Pinoccio:
+      
+* Follow [Pinoccio's instructions](https://pinocc.io/solo) for setting up the development environment.
+* Download the [LinkedList library](https://github.com/ivanseidel/LinkedList) and import it into Arduino Beta (installed during the Pinoccio setup) by ```Sketch->Import Library```.
+* Download the [Arduino Buffered Serial](https://code.google.com/p/arduino-buffered-serial/) library and import it into Arduino Beta by ```Sketch->Import Library```.
+
+
 Build 
 -----
 
