@@ -301,8 +301,7 @@ toCSto (Register r) =
        _     -> return [i|${ts} ${name} = |] 
   
 toCBinOp :: BinOp -> String 
-toCBinOP Logical_And = "&&"
-toCBinOp Logical_Or	 = "||"	
+toCBinOp Logical_Or = "||"	
 toCBinOp Logical_Xor = "^"
 toCBinOp Structural_Equality = "=="
 toCBinOp Greater_Than = ">"
@@ -314,6 +313,7 @@ toCBinOp Add = "+"
 toCBinOp Subtract = "-" 
 toCBinOp Multiply = "*" 
 toCBinOp Divide = "/"
+toCBinOp Logical_And = "&&"
 
 class CanGetType a where
   getType :: a -> Generator Type
