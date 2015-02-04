@@ -7,6 +7,7 @@ module Language.EventBased.Lexer
     FlowControl(..),
     Operators(..),
     Literals(..),
+    IToken(..),
     Token(..)
   ) where
 
@@ -231,7 +232,7 @@ data IToken = Key Keyword
   Option : Proc on Interrupt 
 -} 
 
-data Token = Tok (IToken,AlexPosn)
+data Token = Tok (AlexPosn,IToken)
         deriving (Eq,Show)
 
 parseTime :: ParseTime t => String -> String -> t
@@ -240,5 +241,5 @@ parseTime = parseTimeOrError True defaultTimeLocale
 tokenize :: String -> [Token]
 tokenize = alexScanTokens
 
-ins a t = Tok (t,a)
+ins a t = Tok (a,t)
 }

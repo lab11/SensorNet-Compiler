@@ -17,8 +17,8 @@ cabal-version:       >=1.20
 library
   hs-source-dirs:    lib
   default-language:  Haskell2010
-  exposed-modules:   Language.EventBased.Lexer
---                      Language.EventBased.Parser,
+  exposed-modules:   Language.EventBased.Lexer,
+                     Language.EventBased.Parser
 --                      Language.IR,
 --                      Language.IR.IR,
 --                      Language.IR.FromEventBased,
@@ -51,16 +51,16 @@ executable SensorNet-Lexer
                      pretty-show,
                      sensornet
 
--- executable SensorNet-Parser
---   main-is:           Parser.hs
---   default-language:  Haskell2010
---   hs-source-dirs:    src
---   build-depends:     base >= 4.6,
---                      array,
---                      time >= 1.5,
---                      pretty-show,
---                      sensornet
--- 
+executable SensorNet-Parser
+  main-is:           Parser.hs
+  default-language:  Haskell2010
+  hs-source-dirs:    src
+  build-depends:     base >= 4.6,
+                     array,
+                     time >= 1.5,
+                     pretty-show,
+                     sensornet
+
 -- 
 -- executable SensorNet-IRifier
 --   main-is:           IRifier.hs

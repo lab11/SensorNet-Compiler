@@ -54,81 +54,81 @@ import Control.Lens
 
   -- Operators 
 
-  'ON'                        {L.Key L.On} 
-  'EVERY'                     {L.Key L.Every}
-  'AFTER'                     {L.Key L.After}
-  'AND WHEN'                  {L.Key L.And_When}
-  'BECOMES FALSE'             {L.Key L.Becomes_False}
-  'BECOMES TRUE'              {L.Key L.Becomes_True}
-  'PERFORM'                   {L.Key L.Perform} 
-  'WAIT'                      {L.Key L.Wait}
-  'WITH COOLDOWN'             {L.Key L.With_Cooldown}
-  'WITHIN'                    {L.Key L.Within}
-  'GATHER'                    {L.Key L.Gather}
-  'SEND'                      {L.Key L.Send}
-  'INTO'                      {L.Key L.Into}
-  'EXECUTE'                   {L.Key L.Execute}
-  'INTERRUPT'                 {L.Key L.Interrupt}
-  'IF'                        {L.Key L.If}
-  'ELSE'                      {L.Key L.Else}
-  'DO'                        {L.Key L.Do}
-  'SAVE'                      {L.Key L.Save}
-  'AS'                        {L.Key L.As}
-  'SET OPTIONS'               {L.Key L.Set_Options}
-  'STARTING AT'               {L.Key L.Starting_At}
-  'THEN'                      {L.Key L.Then}
-  'CHECK EVERY'               {L.Key L.Check_Every}
-  'UPDATE'                    {L.Key L.Update} 
+  'ON'                        {L.Tok (_,L.Key L.On)} 
+  'EVERY'                     {L.Tok (_,L.Key L.Every)}
+  'AFTER'                     {L.Tok (_,L.Key L.After)}
+  'AND WHEN'                  {L.Tok (_,L.Key L.And_When)}
+  'BECOMES FALSE'             {L.Tok (_,L.Key L.Becomes_False)}
+  'BECOMES TRUE'              {L.Tok (_,L.Key L.Becomes_True)}
+  'PERFORM'                   {L.Tok (_,L.Key L.Perform)} 
+  'WAIT'                      {L.Tok (_,L.Key L.Wait)}
+  'WITH COOLDOWN'             {L.Tok (_,L.Key L.With_Cooldown)}
+  'WITHIN'                    {L.Tok (_,L.Key L.Within)}
+  'GATHER'                    {L.Tok (_,L.Key L.Gather)}
+  'SEND'                      {L.Tok (_,L.Key L.Send)}
+  'INTO'                      {L.Tok (_,L.Key L.Into)}
+  'EXECUTE'                   {L.Tok (_,L.Key L.Execute)}
+  'INTERRUPT'                 {L.Tok (_,L.Key L.Interrupt)}
+  'IF'                        {L.Tok (_,L.Key L.If)}
+  'ELSE'                      {L.Tok (_,L.Key L.Else)}
+  'DO'                        {L.Tok (_,L.Key L.Do)}
+  'SAVE'                      {L.Tok (_,L.Key L.Save)}
+  'AS'                        {L.Tok (_,L.Key L.As)}
+  'SET OPTIONS'               {L.Tok (_,L.Key L.Set_Options)}
+  'STARTING AT'               {L.Tok (_,L.Key L.Starting_At)}
+  'THEN'                      {L.Tok (_,L.Key L.Then)}
+  'CHECK EVERY'               {L.Tok (_,L.Key L.Check_Every)}
+  'UPDATE'                    {L.Tok (_,L.Key L.Update)} 
 
   -- Time Keywords
 
-  'DAYS'                      {L.RelTime L.Days}
-  'HOURS'                     {L.RelTime L.Hours}
-  'MINS'                      {L.RelTime L.Minutes}
-  'SECS'                      {L.RelTime L.Seconds}
+  'DAYS'                      {L.Tok (_,L.RelTime L.Days)}
+  'HOURS'                     {L.Tok (_,L.RelTime L.Hours)}
+  'MINS'                      {L.Tok (_,L.RelTime L.Minutes)}
+  'SECS'                      {L.Tok (_,L.RelTime L.Seconds)}
 
   -- Flow Control 
 
-  '('                         {L.Flow L.OpParen}
-  ')'                         {L.Flow L.ClParen}
-  '{'                         {L.Flow L.OpBracket}
-  '}'                         {L.Flow L.ClBracket}
-  '['                         {L.Flow L.OpSqBracket}
-  ']'                         {L.Flow L.ClSqBracket}
-  ','                         {L.Flow L.Comma}
-  ';'                         {L.Flow L.Semicolon}
-  ':'                         {L.Flow L.Colon}
-  ':='                        {L.Flow L.Assign}
+  '('                         {L.Tok (_,L.Flow L.OpParen)}
+  ')'                         {L.Tok (_,L.Flow L.ClParen)}
+  '{'                         {L.Tok (_,L.Flow L.OpBracket)}
+  '}'                         {L.Tok (_,L.Flow L.ClBracket)}
+  '['                         {L.Tok (_,L.Flow L.OpSqBracket)}
+  ']'                         {L.Tok (_,L.Flow L.ClSqBracket)}
+  ','                         {L.Tok (_,L.Flow L.Comma)}
+  ';'                         {L.Tok (_,L.Flow L.Semicolon)}
+  ':'                         {L.Tok (_,L.Flow L.Colon)}
+  ':='                        {L.Tok (_,L.Flow L.Assign)}
 
   -- Operators 
 
-  '&&'                        {L.Op L.Logical_And}
-  '||'                        {L.Op L.Logical_Or}
-  '^'                         {L.Op L.Logical_Xor}
-  '!'                         {L.Op L.Logical_Not}
-  '=='                        {L.Op L.Structural_Equality}
-  '>'                         {L.Op L.Greater_Than}
-  '>='                        {L.Op L.Greater_Than_Equals}
-  '<'                         {L.Op L.Less_Than}
-  '<='                        {L.Op L.Less_Than_Equals}
-  '<<'                        {L.Op L.String_Append} 
-  '+'                         {L.Op L.Add} 
-  '-'                         {L.Op L.Subtract}
-  '*'                         {L.Op L.Multiply} 
-  '/'                         {L.Op L.Divide}
+  '&&'                        {L.Tok (_,L.Op L.Logical_And)}
+  '||'                        {L.Tok (_,L.Op L.Logical_Or)}
+  '^'                         {L.Tok (_,L.Op L.Logical_Xor)}
+  '!'                         {L.Tok (_,L.Op L.Logical_Not)}
+  '=='                        {L.Tok (_,L.Op L.Structural_Equality)}
+  '>'                         {L.Tok (_,L.Op L.Greater_Than)}
+  '>='                        {L.Tok (_,L.Op L.Greater_Than_Equals)}
+  '<'                         {L.Tok (_,L.Op L.Less_Than)}
+  '<='                        {L.Tok (_,L.Op L.Less_Than_Equals)}
+  '<<'                        {L.Tok (_,L.Op L.String_Append)} 
+  '+'                         {L.Tok (_,L.Op L.Add)} 
+  '-'                         {L.Tok (_,L.Op L.Subtract)}
+  '*'                         {L.Tok (_,L.Op L.Multiply)} 
+  '/'                         {L.Tok (_,L.Op L.Divide)}
 
   -- Literals 
 
-  str                         {L.Lit (L.Str $$)}
-  int                         {L.Lit (L.Integer $$)}
-  flt                         {L.Lit (L.Flt $$)}
-  bool                        {L.Lit (L.Boolean $$)}
-  email                       {L.Lit (L.Email $$)}
-  id                          {L.Lit (L.Identifier $$)}
-  timeOfDay                   {L.Lit (L.DailyTime $$)}  
-  absTime                     {L.Lit (L.AbsTime $$)}
-  extern                      {L.Lit (L.Extern $$)}   
-  call                        {L.Lit (L.CallOpen $$)} -- Remember this comes with
+  str                         {L.Tok (_,L.Lit (L.Str $$))}
+  int                         {L.Tok (_,L.Lit (L.Integer $$))}
+  flt                         {L.Tok (_,L.Lit (L.Flt $$))}
+  bool                        {L.Tok (_,L.Lit (L.Boolean $$))}
+  email                       {L.Tok (_,L.Lit (L.Email $$))}
+  id                          {L.Tok (_,L.Lit (L.Identifier $$))}
+  timeOfDay                   {L.Tok (_,L.Lit (L.DailyTime $$))}  
+  absTime                     {L.Tok (_,L.Lit (L.AbsTime $$))}
+  extern                      {L.Tok (_,L.Lit (L.Extern $$))}   
+  call                        {L.Tok (_,L.Lit (L.CallOpen $$))} -- Remember this comes with
                                                       -- an attached '('
 
 %nonassoc '>' '<' '<=' '>=' '=='
@@ -349,6 +349,6 @@ setRules (Program a v _) nr = Program a v nr
 -- Error Handling  
 
 parseError :: [L.Token] -> a
-parseError = error . ("Parse error on token : " ++) . ppShow
-
+parseError ((L.Tok (a,t)):_) = error ("Parse error before : " ++ (ppShow t) ++
+                           "\nAt location : " ++ (ppShow a) )
 }
