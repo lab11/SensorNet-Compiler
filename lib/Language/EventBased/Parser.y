@@ -57,7 +57,9 @@ import Control.Lens
   'ON'                        {L.Tok (_,L.Key L.On)} 
   'EVERY'                     {L.Tok (_,L.Key L.Every)}
   'AFTER'                     {L.Tok (_,L.Key L.After)}
-  'AND WHEN'                  {L.Tok (_,L.Key L.And_When)}
+  'AND'                       {L.Tok (_,L.Key L.And)}
+  'WHEN'                      {L.Tok (_,L.Key L.When)}
+  'FOR'                       {L.Tok (_,L.Key L.For)}
   'BECOMES FALSE'             {L.Tok (_,L.Key L.Becomes_False)}
   'BECOMES TRUE'              {L.Tok (_,L.Key L.Becomes_True)}
   'PERFORM'                   {L.Tok (_,L.Key L.Perform)} 
@@ -98,7 +100,9 @@ import Control.Lens
   ','                         {L.Tok (_,L.Flow L.Comma)}
   ';'                         {L.Tok (_,L.Flow L.Semicolon)}
   ':'                         {L.Tok (_,L.Flow L.Colon)}
-  ':='                        {L.Tok (_,L.Flow L.Assign)}
+  ':='                        {L.Tok (_,L.Flow L.Define)}
+  '<-'                        {L.Tok (_,L.Flow L.Assign)}
+
 
   -- Operators 
 
@@ -183,7 +187,7 @@ Records : Records ',' Record                      { $1 ++ [$3] }
 
 Record : 'SAVE' Vexpr 'AS' id                     { Record $2 $4}
 
-Vassign : id ':=' Vexpr ';'                       { AEVassign (ID $1) $3 }
+Vassign : id '<-' Vexpr ';'                       { AEVassign (ID $1) $3 }
 
 Aassign : id ':=' Aexpr                           { AAssign (ID $1) [$3] }
         | id ':=' Block                           { AAssign (ID $1) $3 }
@@ -191,6 +195,13 @@ Aassign : id ':=' Aexpr                           { AAssign (ID $1) [$3] }
 Block : '{' Aexprs '}'                            { $2 } 
 
 Interval : SubIntervals                           { Interval (sum $1) }
+
+Schedule : 'WHEN' '(' Eexpr ')' 'FOR' RBlock      {} -- TODO
+
+RBlock : '{' Rules '}'                            {} -- TODO
+
+Rules : Rule Rules                                {} -- TODO
+      | Rule                                      {}
 
 SubIntervals : SubIntervals SubInterval           { $2 : $1 }
              | SubInterval                        { [$1] }
@@ -205,10 +216,10 @@ Eexpr : 'EVERY' Interval                          { EVEvery $2 }
       | Interval 'AFTER' Eexpr                    { EVAfter $1 $3 }
       | 'INTERRUPT' extern                        { EVInterrupt (Extern $2) }
       | Eexpr 'WITH COOLDOWN' Interval            { EVCooldown $1 $3 }
-      | 'CHECK EVERY' Interval 'AND WHEN' Vexpr 'BECOMES TRUE' 
-                                                  { EVBegins $4 $2 }
-      | 'CHECK EVERY' Interval 'AND WHEN' Vexpr 'BECOMES FALSE' 
-                                                  { EVEnds $4 $2 }
+      | 'CHECK EVERY' Interval 'AND' 'WHEN' Vexpr 'BECOMES TRUE' 
+                                                  { EVBegins $5 $2 }
+      | 'CHECK EVERY' Interval 'AND' 'WHEN' Vexpr 'BECOMES FALSE' 
+                                                  { EVEnds $5 $2 }
       | Eexpr 'WAIT' Interval 'THEN'              { EVAfter $3 $1}
       | '(' Eexpr ')'                             { $2 }
 
@@ -218,6 +229,7 @@ Rule : 'ON' '(' Eexpr ')' Block                   { Rule $3 $5 }
 Program : Vassign Program                         { addValAssign $2 $1 }
         | Aassign Program                         { addActAssign $2 $1 }
         | Rule Program                            { addRule $2 $1 }
+        | Schedule Program                        { $2 } -- TODO
         | {- empty -}                             { Program [] [] [] }
 
 {

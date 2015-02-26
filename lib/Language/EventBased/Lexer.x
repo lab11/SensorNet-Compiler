@@ -65,11 +65,13 @@ tokens :-
   "ON"                        { \ a s -> ins a (Key On) } 
   "EVERY"                     { \ a s -> ins a (Key Every) }
   "AFTER"                     { \ a s -> ins a (Key After) }
-  "AND" $white+ "WHEN"        { \ a s -> ins a (Key And_When) }
+  "AND"                       { \ a s -> ins a (Key And) }
   "BECOMES" $white+ "FALSE"   { \ a s -> ins a (Key Becomes_False) }
   "BECOMES" $white+ "TRUE"    { \ a s -> ins a (Key Becomes_True) }
   "PERFORM"                   { \ a s -> ins a (Key Perform) } 
   "WAIT"                      { \ a s -> ins a (Key Wait) }
+  "WHEN"                      { \ a s -> ins a (Key When) }
+  "FOR"                       { \ a s -> ins a (Key For) }
   "WITH" $white+ "COOLDOWN"   { \ a s -> ins a (Key With_Cooldown) }
   "WITHIN"                    { \ a s -> ins a (Key Within) }
   "INTERRUPT"                 { \ a s -> ins a (Key Interrupt) }
@@ -106,7 +108,8 @@ tokens :-
   ";"                         { \ a s -> ins a (Flow Semicolon) }
   ":"                         { \ a s -> ins a (Flow Colon) }
   ","                         { \ a s -> ins a (Flow Comma) }
-  ":="                        { \ a s -> ins a (Flow Assign) }
+  ":="                        { \ a s -> ins a (Flow Define) }
+  "<-"                        { \ a s -> ins a (Flow Assign) }
 
   -- Operators 
 
@@ -149,9 +152,9 @@ tokens :-
 
 data Literals = Str String
           	  | Integer Int 
-         	    | Flt Float
-         	    | Boolean Bool	
-         	    | Identifier String
+        	     | Flt Float
+              | Boolean Bool	
+              | Identifier String
               | Email String
               | CallOpen String
               | Extern String
@@ -184,17 +187,20 @@ data FlowControl = OpParen
                  | Comma
             	   | Semicolon
             	   | Colon
+                  | Define
             	   | Assign	
 	               deriving (Eq,Show,Read)
 
 data Keyword = On 	
         	   | Every 
         	   | After
-             | And_When
+             | And
              | Becomes_False
              | Becomes_True
         	   | Perform
              | Wait
+             | When
+             | For
         	   | With_Cooldown
         	   | Within
         	   | Gather 
