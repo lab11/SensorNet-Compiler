@@ -174,7 +174,10 @@ Params : Params ',' Vexpr     { $1 ++ [$3] }
 Aexprs : {- empty -}                              { [] }
        | Aexprs Aexpr                             { $1 ++ [$2] } 
 
-Aexpr : 'GATHER' '{' Records '}' 'INTO' extern ';'{ AEGather $3 $6 } 
+Aexpr : 'GATHER' '{' Records '}' 'INTO' extern ';'{ AEGather $3 $6 }
+      | 'GATHER' '{' Records '}' ';'              { AEGather $3 "Default" } 
+      | 'SAVE' Record ';'                         { AEGather [$2] "Default" }
+      | 'SAVE' Record 'INTO' extern ';'           { AEGather [$2] $4 }
       | 'SEND' email Vexpr ';'                    { AESend (Email $2) $3 }
       | 'EXECUTE' Callexpr ';'                    { AEExec $2 }
       | 'IF' '(' Vexpr ')' Block ';'              { AEIf $3 $5 [] }
@@ -196,7 +199,7 @@ Block : '{' Aexprs '}'                            { $2 }
 
 Interval : SubIntervals                           { Interval (sum $1) }
 
-Schedule : 'WHEN' '(' Eexpr ')' 'FOR' RBlock      {} -- TODO
+Schedule : 'WHEN' '(' Eexpr ')' 'FOR' '(' Interval ')' RBlock      {} -- TODO
 
 RBlock : '{' Rules '}'                            {} -- TODO
 
